@@ -1,13 +1,12 @@
 #include <iostream>
 #include <cstdlib>
 #include <unistd.h>
+#include <cstring>
 
 using namespace std;
 
 string ENV_NAME = "DEBUG";
-uint BUF_SIZE = 1024;
-string SPECIAL_PREF = "_META_\n";
-string SPECIAL_SUF = "\n";
+int BUF_SIZE = 1024;
 
 int rootProcess()
 {
@@ -37,6 +36,7 @@ int childProcess(char *program, char *argv[])
         // PROGRAM -> LISTENER
         close(pipe_fd[0]);
         dup2(pipe_fd[1], STDOUT_FILENO);
+        dup2(pipe_fd[1], STDERR_FILENO);
 
         execvp(program, argv);
     }
@@ -45,19 +45,20 @@ int childProcess(char *program, char *argv[])
     close(pipe_fd[1]);
     dup2(pipe_fd[0], STDIN_FILENO);
 
-    int pref_size = SPECIAL_PREF.size(), suf_size = SPECIAL_SUF.size();
-    char buf[BUF_SIZE + pref_size + suf_size];
+    string pref = "M0\n";
+    string suf = "E0\n";
+    char buf[BUF_SIZE + pref.size() + suf.size()];
     int rbytes;
-    while ((rbytes = read(STDIN_FILENO, buf + pref_size, BUF_SIZE)))
+    while ((rbytes = read(STDIN_FILENO, buf + pref.size(), BUF_SIZE)))
     {
         if (rbytes < 0)
             break;
 
         // TODO: Skip already marked data
 
-        memcpy(buf, SPECIAL_PREF.c_str(), pref_size);
-        memcpy(buf + rbytes + pref_size, SPECIAL_SUF.c_str(), suf_size);
-        write(STDOUT_FILENO, buf, pref_size + rbytes + suf_size);
+        memcpy(buf, pref.c_str(), pref.size());                      // copy prefix
+        memcpy(buf + rbytes + pref.size(), suf.c_str(), suf.size()); // copy suffix
+        write(STDOUT_FILENO, buf, pref.size() + rbytes + suf.size());
     }
 
     return 0;
@@ -81,7 +82,7 @@ int main(int argc, char *argv[])
             close(pipe_fd[1]);
             dup2(pipe_fd[0], STDIN_FILENO);
 
-            uint exit_code = rootProcess();
+            int exit_code = rootProcess();
             unsetenv(ENV_NAME.c_str());
             return exit_code;
         }
@@ -93,6 +94,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    uint exit_code = childProcess(argv[1], argv + 1);
+    int exit_code = childProcess(argv[1], argv + 1);
     return exit_code;
 }
