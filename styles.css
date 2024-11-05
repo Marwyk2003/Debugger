@@ -1,0 +1,161 @@
+body {
+    background-color: #272822;
+    margin: 0;
+    padding: 0
+}
+
+table {
+	font-size: 14px;
+}
+
+div.line {
+  border-bottom: 2px solid #00AAAA;
+  position: absolute;
+  width: 100%;
+}
+
+div.head {
+    margin: 10px;
+    padding: 0
+}
+
+div.info {
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 15px;
+	font-style: normal;
+	font-variant: normal;
+	font-weight: 500;
+	line-height: 22px;
+}
+
+span.info-title {
+ font-style: italic;
+ color: #00AAAA;
+}
+
+span.info-value {
+    color:  #F8F8F2;
+	 font-size: 15px;
+}
+
+a.info-value {
+ color: #F8F8F2;
+}
+
+span.info-value-path {
+	font-family: monospace;
+	font-size: 15px;
+	font-style: normal;
+	font-variant: normal;
+	font-weight: 100;
+	line-height: 18px;
+}
+
+a.info-value-fromcall-ok {
+    color: #00AA00;
+}
+
+a.info-value-fromcall-err {
+    color: #BB1111
+}
+
+a.info-value-fromcall-wait {
+    color: #BBBB11
+}
+
+
+
+
+span.exitok {
+	color: #00AA00;
+}
+
+span.exiterr {
+	color: #CC1111
+}
+
+span.exitno {
+	color: #AAAA00;
+}
+
+
+div.entries {
+	padding: 10px;
+	font-family: monospace;
+	font-size: 14px;
+	font-style: normal;
+	font-variant: normal;
+	font-weight: 500;
+	line-height: 18px;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+td.entry-time {
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 14px;
+	font-style: normal;
+	font-variant: normal;
+	font-weight: 500;
+	line-height: 18px;
+	font-style: italic;
+	color: #B8B8B2;
+    text-align: right;
+    width: 150px;
+    display: inline-block;
+}
+
+td.entry-log {
+    border-left: 1px solid #B8B8B2;
+    padding-left: 10px;
+}
+
+td.entry-stdout {
+    color:  #F8F8F2;
+}
+
+td.entry-stderr {
+    color:  #CC5500;
+}
+
+td.entry-call-wait {
+    color:  #BBBB11;
+}
+
+td.entry-call-ok {
+    color:  #00AA00;
+}
+
+td.entry-call-err {
+    color:  #BB1111;
+}
+
+a.entry-call {
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+a.entry-call-ok {
+    color: #00AA00;
+}
+
+a.entry-call-err {
+    color: #BB1111
+}
+
+a.entry-call-wait {
+    color: #BBBB11
+}
+
+span.entry-exit {
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 15px;
+	font-style: normal;
+	font-variant: normal;
+	font-weight: 500;
+	line-height: 22px;
+	font-style: italic;
+	padding-right: 0px;
+}
