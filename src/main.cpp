@@ -155,8 +155,8 @@ int childProcess(char *program, char *argv[])
 }
 
 void writeHeader(string program_name){
-    auto now = std::chrono::system_clock::now();
-    auto time = std::chrono::system_clock::to_time_t(now);
+    auto now = chrono::system_clock::now();
+    auto time = chrono::system_clock::to_time_t(now);
     result << R"(<!DOCTYPE html>
 <html lang="pl-PL">
 <head>
@@ -173,7 +173,7 @@ void writeHeader(string program_name){
 </div>
 <div class="info">
 <span class="info-title">start time:</span> <span class="info-value">)";
-result << put_time(std::localtime(&time), "%Y-%m-%d %H:%M:%S");
+result << put_time(localtime(&time), "%Y-%m-%d %H:%M:%S");
 result << R"(</span>
 </div>
 <div class="info">
@@ -190,12 +190,12 @@ result << R"(</span>
 
 void writeLine(string line, string timeStr, bool isError){
     long long milliseconds = stoll(timeStr);
-    auto duration = std::chrono::milliseconds(milliseconds);
-    auto time_point = std::chrono::system_clock::time_point(duration);
-    time_t time= std::chrono::system_clock::to_time_t(time_point);
+    auto duration = chrono::milliseconds(milliseconds);
+    auto time_point = chrono::system_clock::time_point(duration);
+    time_t time= chrono::system_clock::to_time_t(time_point);
 
     result << "<tr><td class=\"entry-time\">";
-    result << put_time(std::localtime(&time), "%Y-%m-%d %H:%M:%S");
+    result << put_time(localtime(&time), "%Y-%m-%d %H:%M:%S");
     if(isError)
         result << "</td><td>&nbsp;</td><td class=\"entry-log entry-stderr\">";
     else
@@ -222,7 +222,7 @@ void writePackage(char * buf, bool isError){
     }
 }
 
-int main(int argc, char *argv[])
+int main(int, char *argv[])
 {
 
     result.open("result.html", ios::out | ios::trunc);
