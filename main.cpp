@@ -3,7 +3,6 @@
 #include <unistd.h>
 #include <cstring>
 #include <fcntl.h>
-#include <cerrno>
 #include <chrono>
 
 using namespace std;
@@ -73,7 +72,7 @@ int childProcess(char *program, char *argv[])
         dup2(pipe_fd_out[1], STDOUT_FILENO);
         dup2(pipe_fd_err[1], STDERR_FILENO);
 
-        execvp(program, argv);
+        execv(program, argv);
     }
 
     // LISTENER <- PROGRAM
@@ -113,7 +112,6 @@ int childProcess(char *program, char *argv[])
                 out_ended = true;
             else
             {
-
                 memcpy(buf, pref.c_str(), pref.size());                      // copy prefix
                 memcpy(buf + rbytes + pref.size(), suf.c_str(), suf.size()); // copy suffix
                 write(STDOUT_FILENO, buf, pref.size() + rbytes + suf.size());
