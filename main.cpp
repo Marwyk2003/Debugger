@@ -2,23 +2,53 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <cstring>
+#include <fcntl.h>
+#include <cerrno>
 
 using namespace std;
 
-string ENV_NAME = "DEBUG";
-int BUF_SIZE = 1024;
+#define ENV_NAME "DEBUG"
+#define BUF_SIZE 1024
+#define FD_OUT 3
+#define FD_ERR 4
 
 int rootProcess()
 {
     // read input, create html etc.
 
+    // SELECT
+    fd_set read_fds;
+    int select_fd = 5;
+    fcntl(FD_OUT, F_SETFL, O_NONBLOCK);
+    fcntl(FD_ERR, F_SETFL, O_NONBLOCK);
+
     char buf[BUF_SIZE];
     int rbytes;
-    while ((rbytes = read(STDIN_FILENO, buf, BUF_SIZE)))
+    while (1)
     {
-        if (rbytes < 0)
+        FD_ZERO(&read_fds);
+        FD_SET(FD_OUT, &read_fds);
+        FD_SET(FD_ERR, &read_fds);
+
+        int s = select(select_fd, &read_fds, nullptr, nullptr, nullptr);
+        if (s == -1)
             break;
-        write(STDOUT_FILENO, buf, rbytes);
+
+        if (FD_ISSET(FD_OUT, &read_fds))
+        {
+            rbytes = read(FD_OUT, buf, BUF_SIZE);
+            if (rbytes <= 0)
+                break;
+            write(STDOUT_FILENO, buf, rbytes);
+        }
+
+        if (FD_ISSET(FD_ERR, &read_fds))
+        {
+            rbytes = read(FD_ERR, buf, BUF_SIZE);
+            if (rbytes <= 0)
+                break;
+            write(STDERR_FILENO, buf, rbytes);
+        }
     }
 
     return 0;
@@ -27,38 +57,71 @@ int rootProcess()
 int childProcess(char *program, char *argv[])
 {
     // create pipe LISTENER <- PROGRAM
-    int pipe_fd[2];
-    pipe(pipe_fd);
+    int pipe_fd_out[2], pipe_fd_err[2];
+    pipe(pipe_fd_out);
+    pipe(pipe_fd_err);
 
     pid_t pid = fork();
     if (pid == 0)
     {
         // PROGRAM -> LISTENER
-        close(pipe_fd[0]);
-        dup2(pipe_fd[1], STDOUT_FILENO);
-        dup2(pipe_fd[1], STDERR_FILENO);
+        close(pipe_fd_out[0]);
+        close(pipe_fd_err[0]);
+        dup2(pipe_fd_out[1], STDOUT_FILENO);
+        dup2(pipe_fd_err[1], STDERR_FILENO);
 
         execvp(program, argv);
     }
 
     // LISTENER <- PROGRAM
-    close(pipe_fd[1]);
-    dup2(pipe_fd[0], STDIN_FILENO);
+    close(pipe_fd_out[1]);
+    close(pipe_fd_err[1]);
+    dup2(pipe_fd_out[0], FD_OUT);
+    dup2(pipe_fd_err[0], FD_ERR);
 
-    string pref = "M0\n";
-    string suf = "E0\n";
-    char buf[BUF_SIZE + pref.size() + suf.size()];
+    // SELECT
+    fd_set read_fds;
+    int select_fd = 5;
+    fcntl(FD_OUT, F_SETFL, O_NONBLOCK);
+    fcntl(FD_ERR, F_SETFL, O_NONBLOCK);
+
+    char buf[BUF_SIZE];
     int rbytes;
-    while ((rbytes = read(STDIN_FILENO, buf + pref.size(), BUF_SIZE)))
+    while (1)
     {
-        if (rbytes < 0)
+        FD_ZERO(&read_fds);
+        FD_SET(FD_OUT, &read_fds);
+        FD_SET(FD_ERR, &read_fds);
+
+        int s = select(select_fd, &read_fds, nullptr, nullptr, nullptr);
+        if (s == -1)
             break;
 
-        // TODO: Skip already marked data
+        if (FD_ISSET(FD_OUT, &read_fds))
+        {
+            string pref = "B_OUT\n", suf = "\nE_OUT\n";
 
-        memcpy(buf, pref.c_str(), pref.size());                      // copy prefix
-        memcpy(buf + rbytes + pref.size(), suf.c_str(), suf.size()); // copy suffix
-        write(STDOUT_FILENO, buf, pref.size() + rbytes + suf.size());
+            rbytes = read(FD_OUT, buf + pref.size(), BUF_SIZE);
+            if (rbytes <= 0)
+                break;
+
+            memcpy(buf, pref.c_str(), pref.size());                      // copy prefix
+            memcpy(buf + rbytes + pref.size(), suf.c_str(), suf.size()); // copy suffix
+            write(STDOUT_FILENO, buf, pref.size() + rbytes + suf.size());
+        }
+
+        if (FD_ISSET(FD_ERR, &read_fds))
+        {
+            string pref = "B_ERR\n", suf = "\nE_ERR\n";
+
+            rbytes = read(FD_ERR, buf + pref.size(), BUF_SIZE);
+            if (rbytes <= 0)
+                break;
+
+            memcpy(buf, pref.c_str(), pref.size());                      // copy prefix
+            memcpy(buf + rbytes + pref.size(), suf.c_str(), suf.size()); // copy suffix
+            write(STDERR_FILENO, buf, pref.size() + rbytes + suf.size());
+        }
     }
 
     return 0;
@@ -66,31 +129,36 @@ int childProcess(char *program, char *argv[])
 
 int main(int argc, char *argv[])
 {
-    char *env_var = getenv(ENV_NAME.c_str());
+    char *env_var = getenv(ENV_NAME);
     if (!env_var)
     {
         putenv(argv[0]);
 
         // create pipe ROOT <- LISTENER 1
-        int pipe_fd[2];
-        pipe(pipe_fd);
+        int pipe_fd_out[2], pipe_fd_err[2];
+        pipe(pipe_fd_out);
+        pipe(pipe_fd_err);
 
         pid_t pid = fork();
         if (pid != 0)
         {
             // ROOT <- CHILD
-            close(pipe_fd[1]);
-            dup2(pipe_fd[0], STDIN_FILENO);
+            close(pipe_fd_out[1]);
+            close(pipe_fd_err[1]);
+            dup2(pipe_fd_out[0], FD_OUT);
+            dup2(pipe_fd_err[0], FD_ERR);
 
             int exit_code = rootProcess();
-            unsetenv(ENV_NAME.c_str());
+            unsetenv(ENV_NAME);
             return exit_code;
         }
         else
         {
             // CHILD -> ROOT
-            close(pipe_fd[0]);
-            dup2(pipe_fd[1], STDOUT_FILENO);
+            close(pipe_fd_out[0]);
+            close(pipe_fd_err[0]);
+            dup2(pipe_fd_out[1], STDOUT_FILENO);
+            dup2(pipe_fd_err[1], STDERR_FILENO);
         }
     }
 
