@@ -4,6 +4,7 @@
 #include <cstring>
 #include <fcntl.h>
 #include <cerrno>
+#include <chrono>
 
 using namespace std;
 
@@ -24,7 +25,8 @@ int rootProcess()
 
     char buf[BUF_SIZE];
     int rbytes;
-    while (1)
+    bool out_ended = false, err_ended = false;
+    while (!out_ended || !err_ended)
     {
         FD_ZERO(&read_fds);
         FD_SET(FD_OUT, &read_fds);
@@ -34,23 +36,24 @@ int rootProcess()
         if (s == -1)
             break;
 
-        if (FD_ISSET(FD_OUT, &read_fds))
+        if (!out_ended && FD_ISSET(FD_OUT, &read_fds))
         {
             rbytes = read(FD_OUT, buf, BUF_SIZE);
             if (rbytes <= 0)
-                break;
-            write(STDOUT_FILENO, buf, rbytes);
+                out_ended = true;
+            else
+                write(STDOUT_FILENO, buf, rbytes);
         }
 
-        if (FD_ISSET(FD_ERR, &read_fds))
+        if (!err_ended && FD_ISSET(FD_ERR, &read_fds))
         {
             rbytes = read(FD_ERR, buf, BUF_SIZE);
             if (rbytes <= 0)
-                break;
-            write(STDERR_FILENO, buf, rbytes);
+                err_ended = true;
+            else
+                write(STDERR_FILENO, buf, rbytes);
         }
     }
-
     return 0;
 }
 
@@ -87,7 +90,8 @@ int childProcess(char *program, char *argv[])
 
     char buf[BUF_SIZE];
     int rbytes;
-    while (1)
+    bool out_ended = false, err_ended = false;
+    while (!out_ended || !err_ended)
     {
         FD_ZERO(&read_fds);
         FD_SET(FD_OUT, &read_fds);
@@ -97,30 +101,41 @@ int childProcess(char *program, char *argv[])
         if (s == -1)
             break;
 
-        if (FD_ISSET(FD_OUT, &read_fds))
+        if (!out_ended && FD_ISSET(FD_OUT, &read_fds))
         {
-            string pref = "B_OUT\n", suf = "\nE_OUT\n";
+            auto now = chrono::system_clock::now();
+            auto currentTime = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
+
+            string pref = "B_OUT\n" + to_string(currentTime) + "\n", suf = "\nE_OUT\n";
 
             rbytes = read(FD_OUT, buf + pref.size(), BUF_SIZE);
             if (rbytes <= 0)
-                break;
+                out_ended = true;
+            else
+            {
 
-            memcpy(buf, pref.c_str(), pref.size());                      // copy prefix
-            memcpy(buf + rbytes + pref.size(), suf.c_str(), suf.size()); // copy suffix
-            write(STDOUT_FILENO, buf, pref.size() + rbytes + suf.size());
+                memcpy(buf, pref.c_str(), pref.size());                      // copy prefix
+                memcpy(buf + rbytes + pref.size(), suf.c_str(), suf.size()); // copy suffix
+                write(STDOUT_FILENO, buf, pref.size() + rbytes + suf.size());
+            }
         }
 
-        if (FD_ISSET(FD_ERR, &read_fds))
+        if (!err_ended && FD_ISSET(FD_ERR, &read_fds))
         {
-            string pref = "B_ERR\n", suf = "\nE_ERR\n";
+            auto now = chrono::system_clock::now();
+            auto currentTime = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
+
+            string pref = "B_ERR\n" + to_string(currentTime) + "\n", suf = "\nE_ERR\n";
 
             rbytes = read(FD_ERR, buf + pref.size(), BUF_SIZE);
             if (rbytes <= 0)
-                break;
-
-            memcpy(buf, pref.c_str(), pref.size());                      // copy prefix
-            memcpy(buf + rbytes + pref.size(), suf.c_str(), suf.size()); // copy suffix
-            write(STDERR_FILENO, buf, pref.size() + rbytes + suf.size());
+                err_ended = true;
+            else
+            {
+                memcpy(buf, pref.c_str(), pref.size());                      // copy prefix
+                memcpy(buf + rbytes + pref.size(), suf.c_str(), suf.size()); // copy suffix
+                write(STDERR_FILENO, buf, pref.size() + rbytes + suf.size());
+            }
         }
     }
 
