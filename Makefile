@@ -28,4 +28,4 @@ check_dirs:
 clean:
 	rm -rf $(BIN_DIR) $(OBJ_DIR) 
 
-.PHONY: clean check_dirs all 
+.PHONY: clean check_dirs all
