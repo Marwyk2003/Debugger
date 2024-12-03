@@ -5,6 +5,7 @@
 #include <chrono>
 #include <iomanip>
 #include <filesystem>
+#include <limits.h>
 
 #include "parser.hpp"
 #include "const.hpp"
@@ -144,11 +145,11 @@ int main(int, char *argv[])
     if (!env_var)
     {
 
-        char path[1024];
-        int count = readlink("/proc/self/exe", path, 1024);
+        char path[PATH_MAX];
+        int count = readlink("/proc/self/exe", path, PATH_MAX);
         if(count > 0){
             path[count] = 0;
-            setenv(ENV_NAME, argv[0], 1);
+            setenv(ENV_NAME, path, 1);
         }else{
             setenv(ENV_NAME, argv[0], 1);
         }
