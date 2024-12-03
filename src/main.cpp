@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <chrono>
 #include <iomanip>
+#include <filesystem>
 
 #include "parser.hpp"
 #include "const.hpp"
@@ -60,7 +61,7 @@ int rootProcess()
     return 0;
 }
 
-void sendPacket(bool&, char*, char *);
+void sendPacket(int, bool&, char*, char *);
 
 int childProcess(char *program, char *argv[])
 {
@@ -132,7 +133,7 @@ void sendPacket(int fd, bool& input_ended, char* buf, char* program_name){
     {
         memcpy(buf, pref.c_str(), pref.size());                      // copy prefix
         memcpy(buf + rbytes + pref.size(), suf.c_str(), suf.size()); // copy suffix
-        write(STDOUT_FILENO, buf, pref.size() + rbytes + suf.size());
+        write(fd - 2, buf, pref.size() + rbytes + suf.size());
     }
 }
 
@@ -142,7 +143,15 @@ int main(int, char *argv[])
     char *env_var = getenv(ENV_NAME);
     if (!env_var)
     {
-        setenv(ENV_NAME, argv[0], 1);
+
+        char path[1024];
+        int count = readlink("/proc/self/exe", path, 1024);
+        if(count > 0){
+            path[count] = 0;
+            setenv(ENV_NAME, argv[0], 1);
+        }else{
+            setenv(ENV_NAME, argv[0], 1);
+        }
 
         // create pipe ROOT <- LISTENER 1
         int pipe_fd_out[2], pipe_fd_err[2];
