@@ -62,7 +62,7 @@ void writeLine(ofstream &result, string line, string timeStr, bool isError)
 
 void writeLink(ofstream &result, string pid)
 {
-    result << "<a href=\"result_" << pid << ".html\">link do " << pid << " </a>\n";
+    result << "<tr><td class=\"entry-time\">2024-12-03 13:21:49</td><td>&nbsp;</td><td class=\"entry-log entry-link\"><a href=\"result_" << pid << ".html\">link do " << pid << " </a></td></tr>\n";
 }
 
 void writePackage(map<string, ofstream> &pidMap, char *buf, bool isError)
@@ -75,9 +75,9 @@ void writePackage(map<string, ofstream> &pidMap, char *buf, bool isError)
     {
         if (line == BEGIN_OUT)
         {
+            ppid = pid;
             getline(stream, pid);
             getline(stream, time);
-            ppid = pid;
             continue;
         }
         if (line == END_OUT)
@@ -87,7 +87,7 @@ void writePackage(map<string, ofstream> &pidMap, char *buf, bool isError)
         {
             pidMap[pid].open("result_" + pid + ".html", ios::out | ios::trunc);
             writeHeader(pidMap[pid], "");
-            writeLink(pidMap[ppid], ppid);
+            writeLink(pidMap[ppid], pid);
         }
         ofstream &s = pidMap[pid];
         writeLine(s, line, time, isError);

@@ -42,6 +42,7 @@ int rootProcess()
                 out_ended = true;
             else
                 writePackage(pids, buf, false);
+                //write(STDOUT_FILENO, buf, rbytes);
         }
 
         if (!err_ended && FD_ISSET(FD_ERR, &read_fds))
@@ -52,6 +53,7 @@ int rootProcess()
                 err_ended = true;
             else
                 writePackage(pids, buf, true);
+                //write(STDOUT_FILENO, buf, rbytes);
         }
     }
 
@@ -149,7 +151,7 @@ int main(int, char *argv[])
     if (!env_var)
     {
         setenv(ENV_NAME, argv[0], 1);
-
+        
         // create pipe ROOT <- LISTENER 1
         int pipe_fd_out[2], pipe_fd_err[2];
         pipe(pipe_fd_out);
