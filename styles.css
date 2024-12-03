@@ -8,6 +8,16 @@ table {
 	font-size: 14px;
 }
 
+a:link {
+    color: #9270ff;
+    text-decoration: none;
+}
+
+a:visited {
+    color: #7178ff;
+    text-decoration: none;
+}
+
 div.line {
   border-bottom: 2px solid #00AAAA;
   position: absolute;
