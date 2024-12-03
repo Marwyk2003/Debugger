@@ -60,16 +60,23 @@ void writeLine(ofstream &result, string line, string timeStr, bool isError)
     result.flush();
 }
 
-void writeLink(ofstream &result, string pid)
+void writeLink(ofstream &result, string timeStr, string pid, string name)
 {
-    result << "<tr><td class=\"entry-time\">2024-12-03 13:21:49</td><td>&nbsp;</td><td class=\"entry-log entry-link\"><a href=\"result_" << pid << ".html\">link do " << pid << " </a></td></tr>\n";
+    long long milliseconds = stoll(timeStr);
+    auto duration = chrono::milliseconds(milliseconds);
+    auto time_point = chrono::system_clock::time_point(duration);
+    time_t time = chrono::system_clock::to_time_t(time_point);
+
+    result << "<tr><td class=\"entry-time\">";
+    result << put_time(localtime(&time), "%Y-%m-%d %H:%M:%S");
+    result << "</td><td>&nbsp;</td><td class=\"entry-log entry-link\"><a href=\"result_" << pid << ".html\">" << name << " </a></td></tr>\n";
 }
 
 void writePackage(map<string, ofstream> &pidMap, char *buf, bool isError)
 {
     istringstream stream(buf);
     string line;
-    string pid, ppid, time;
+    string pid, ppid, name = "", time;
 
     while (getline(stream, line))
     {
@@ -77,6 +84,7 @@ void writePackage(map<string, ofstream> &pidMap, char *buf, bool isError)
         {
             ppid = pid;
             getline(stream, pid);
+            getline(stream, name);
             getline(stream, time);
             continue;
         }
@@ -86,8 +94,8 @@ void writePackage(map<string, ofstream> &pidMap, char *buf, bool isError)
         if (pidMap.find(pid) == pidMap.end())
         {
             pidMap[pid].open("result_" + pid + ".html", ios::out | ios::trunc);
-            writeHeader(pidMap[pid], "");
-            writeLink(pidMap[ppid], pid);
+            writeHeader(pidMap[pid], name);
+            writeLink(pidMap[ppid], time, pid, name);
         }
         ofstream &s = pidMap[pid];
         writeLine(s, line, time, isError);

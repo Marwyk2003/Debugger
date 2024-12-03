@@ -1,3 +1,7 @@
-echo "rec2 start"
+echo "recurence second"
+echo "calling rec1:"
 ./bin/debugger ./test/rec1.sh
-echo "rec2 end"
+echo "now calling simple test:"
+./bin/debugger ./test/simple.sh
+echo "ending"
+>&2 echo "errorringg"

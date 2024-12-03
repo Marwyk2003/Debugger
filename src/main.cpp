@@ -63,7 +63,7 @@ int rootProcess()
 }
 
 int childProcess(char *program, char *argv[])
-{
+{   
     // create pipe LISTENER <- PROGRAM
     int pipe_fd_out[2], pipe_fd_err[2];
     pipe(pipe_fd_out);
@@ -111,9 +111,9 @@ int childProcess(char *program, char *argv[])
             auto now = chrono::system_clock::now();
             auto currentTime = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
 
-            string pref = BEGIN_OUT + string("\n") + to_string(getpid()) + "\n" + to_string(currentTime) + "\n", suf = END_OUT + string("\n");
+            string pref = BEGIN_OUT + string("\n") + to_string(getpid()) + "\n" + program + '\n' + to_string(currentTime) + "\n", suf = END_OUT + string("\n");
 
-            rbytes = read(FD_OUT, buf + pref.size(), BUF_SIZE);
+            rbytes = read(FD_OUT, buf + pref.size(), BUF_SIZE); //"\n" + program_name + 
             if (rbytes <= 0)
                 out_ended = true;
             else
@@ -124,12 +124,13 @@ int childProcess(char *program, char *argv[])
             }
         }
 
+
         if (!err_ended && FD_ISSET(FD_ERR, &read_fds))
         {
             auto now = chrono::system_clock::now();
             auto currentTime = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
 
-            string pref = BEGIN_OUT + string("\n") + to_string(getpid()) + "\n" + to_string(currentTime) + "\n", suf = END_OUT + string("\n");
+            string pref = BEGIN_OUT + string("\n") + to_string(getpid()) + "\n" + program + '\n' + to_string(currentTime) + "\n", suf = END_OUT + string("\n");
 
             rbytes = read(FD_ERR, buf + pref.size(), BUF_SIZE);
             if (rbytes <= 0)
@@ -151,7 +152,7 @@ int main(int, char *argv[])
     if (!env_var)
     {
         setenv(ENV_NAME, argv[0], 1);
-        
+
         // create pipe ROOT <- LISTENER 1
         int pipe_fd_out[2], pipe_fd_err[2];
         pipe(pipe_fd_out);
@@ -179,7 +180,6 @@ int main(int, char *argv[])
             dup2(pipe_fd_err[1], STDERR_FILENO);
         }
     }
-
     int exit_code = childProcess(argv[1], argv + 1);
     return exit_code;
 }
