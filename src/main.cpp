@@ -60,7 +60,7 @@ int rootProcess()
     return 0;
 }
 
-void sendPacket(bool &, char *, char *);
+void sendPacket(bool&, char*, char *);
 
 int childProcess(char *program, char *argv[])
 {
@@ -107,24 +107,25 @@ int childProcess(char *program, char *argv[])
 
         if (!out_ended && FD_ISSET(FD_OUT, &read_fds))
         {
-            sendPacket(out_ended, buf, program);
+            sendPacket(FD_OUT, out_ended, buf, program);
         }
+
         if (!err_ended && FD_ISSET(FD_ERR, &read_fds))
         {
-            sendPacket(err_ended, buf, program);
+            sendPacket(FD_ERR, err_ended, buf, program);
         }
     }
     return 0;
 }
 
-void sendPacket(bool &input_ended, char *buf, char *program_name)
-{
+void sendPacket(int fd, bool& input_ended, char* buf, char* program_name){
+
     auto now = chrono::system_clock::now();
     auto currentTime = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
 
     string pref = BEGIN_OUT + string("\n") + to_string(getpid()) + "\n" + program_name + '\n' + to_string(currentTime) + "\n", suf = END_OUT + string("\n");
-
-    int rbytes = read(FD_OUT, buf + pref.size(), BUF_SIZE);
+    
+    int rbytes = read(fd, buf + pref.size(), BUF_SIZE);
     if (rbytes <= 0)
         input_ended = true;
     else
@@ -134,6 +135,7 @@ void sendPacket(bool &input_ended, char *buf, char *program_name)
         write(STDOUT_FILENO, buf, pref.size() + rbytes + suf.size());
     }
 }
+
 
 int main(int, char *argv[])
 {
