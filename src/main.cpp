@@ -42,7 +42,6 @@ int rootProcess()
                 out_ended = true;
             else
                 writePackage(pids, buf, false);
-                //write(STDOUT_FILENO, buf, rbytes);
         }
 
         if (!err_ended && FD_ISSET(FD_ERR, &read_fds))
@@ -53,7 +52,6 @@ int rootProcess()
                 err_ended = true;
             else
                 writePackage(pids, buf, true);
-                //write(STDOUT_FILENO, buf, rbytes);
         }
     }
 
@@ -62,8 +60,10 @@ int rootProcess()
     return 0;
 }
 
+void sendPacket(bool &, char *, char *);
+
 int childProcess(char *program, char *argv[])
-{   
+{
     // create pipe LISTENER <- PROGRAM
     int pipe_fd_out[2], pipe_fd_err[2];
     pipe(pipe_fd_out);
@@ -94,7 +94,6 @@ int childProcess(char *program, char *argv[])
     fcntl(FD_ERR, F_SETFL, O_NONBLOCK);
 
     char buf[BUF_SIZE];
-    int rbytes;
     bool out_ended = false, err_ended = false;
     while (!out_ended || !err_ended)
     {
@@ -108,42 +107,32 @@ int childProcess(char *program, char *argv[])
 
         if (!out_ended && FD_ISSET(FD_OUT, &read_fds))
         {
-            auto now = chrono::system_clock::now();
-            auto currentTime = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
-
-            string pref = BEGIN_OUT + string("\n") + to_string(getpid()) + "\n" + program + '\n' + to_string(currentTime) + "\n", suf = END_OUT + string("\n");
-
-            rbytes = read(FD_OUT, buf + pref.size(), BUF_SIZE); //"\n" + program_name + 
-            if (rbytes <= 0)
-                out_ended = true;
-            else
-            {
-                memcpy(buf, pref.c_str(), pref.size());                      // copy prefix
-                memcpy(buf + rbytes + pref.size(), suf.c_str(), suf.size()); // copy suffix
-                write(STDOUT_FILENO, buf, pref.size() + rbytes + suf.size());
-            }
+            sendPacket(out_ended, buf, program);
         }
-
-
         if (!err_ended && FD_ISSET(FD_ERR, &read_fds))
         {
-            auto now = chrono::system_clock::now();
-            auto currentTime = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
-
-            string pref = BEGIN_OUT + string("\n") + to_string(getpid()) + "\n" + program + '\n' + to_string(currentTime) + "\n", suf = END_OUT + string("\n");
-
-            rbytes = read(FD_ERR, buf + pref.size(), BUF_SIZE);
-            if (rbytes <= 0)
-                err_ended = true;
-            else
-            {
-                memcpy(buf, pref.c_str(), pref.size());                      // copy prefix
-                memcpy(buf + rbytes + pref.size(), suf.c_str(), suf.size()); // copy suffix
-                write(STDERR_FILENO, buf, pref.size() + rbytes + suf.size());
-            }
+            sendPacket(err_ended, buf, program);
         }
     }
     return 0;
+}
+
+void sendPacket(bool &input_ended, char *buf, char *program_name)
+{
+    auto now = chrono::system_clock::now();
+    auto currentTime = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
+
+    string pref = BEGIN_OUT + string("\n") + to_string(getpid()) + "\n" + program_name + '\n' + to_string(currentTime) + "\n", suf = END_OUT + string("\n");
+
+    int rbytes = read(FD_OUT, buf + pref.size(), BUF_SIZE);
+    if (rbytes <= 0)
+        input_ended = true;
+    else
+    {
+        memcpy(buf, pref.c_str(), pref.size());                      // copy prefix
+        memcpy(buf + rbytes + pref.size(), suf.c_str(), suf.size()); // copy suffix
+        write(STDOUT_FILENO, buf, pref.size() + rbytes + suf.size());
+    }
 }
 
 int main(int, char *argv[])

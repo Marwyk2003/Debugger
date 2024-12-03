@@ -76,7 +76,7 @@ void writePackage(map<string, ofstream> &pidMap, char *buf, bool isError)
 {
     istringstream stream(buf);
     string line;
-    string pid, ppid, name = "", time;
+    string pid, ppid, name, time;
 
     while (getline(stream, line))
     {
