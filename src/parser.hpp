@@ -10,6 +10,6 @@
 
 using namespace std;
 
-void parse_buffer(map<string, ofstream> &pidMap, char *buf, bool isError);
+void parse_buffer(map<string, ofstream>& pidMap, char* buf, bool isError);
 
 #endif // PARSER_HPP
