@@ -10,9 +10,9 @@
 
 using namespace std;
 
-void sendPacket(int, bool&, char*, char *);
+void sendPacket(int, bool&, char*, char*);
 
-int childProcess(char *program, char *argv[])
+int childProcess(char* program, char* argv[])
 {
     // create pipe LISTENER <- PROGRAM
     int pipe_fd_out[2], pipe_fd_err[2];
@@ -68,12 +68,12 @@ int childProcess(char *program, char *argv[])
     return 0;
 }
 
-void sendPacket(int fd, bool& input_ended, char* buf, char* program_name){
+void sendPacket(int fd, bool& input_ended, char* buf, char* program_name) {
     auto now = chrono::system_clock::now();
     auto currentTime = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
 
     string pref = BEGIN_OUT + string("\n") + to_string(getpid()) + "\n" + program_name + '\n' + to_string(currentTime) + "\n", suf = END_OUT + string("\n");
-    
+
     int rbytes = read(fd, buf + pref.size(), BUF_SIZE);
     if (rbytes <= 0)
         input_ended = true;

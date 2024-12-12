@@ -7,7 +7,7 @@
 
 using namespace std;
 
-void parse_buffer(map<string, ofstream> &pidMap, char *buf, bool isError)
+void parse_buffer(map<string, ofstream>& pidMap, char* buf, bool isError)
 {
     istringstream stream(buf);
     string line;
@@ -32,7 +32,7 @@ void parse_buffer(map<string, ofstream> &pidMap, char *buf, bool isError)
             writeHeader(pidMap[pid], name);
             writeLink(pidMap[ppid], time, pid, name);
         }
-        ofstream &s = pidMap[pid];
+        ofstream& s = pidMap[pid];
         writeLine(s, line, time, isError);
     }
 }

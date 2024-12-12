@@ -58,23 +58,24 @@ int rootProcess()
         }
     }
 
-    for (auto &[k, v] : pids)
+    for (auto& [k, v] : pids)
         v.close();
     return 0;
 }
 
-int main(int, char *argv[])
+int main(int, char* argv[])
 {
-    char *env_var = getenv(ENV_NAME);
+    char* env_var = getenv(ENV_NAME);
     if (!env_var)
     {
 
         char path[PATH_MAX];
         int count = readlink("/proc/self/exe", path, PATH_MAX);
-        if(count > 0){
+        if (count > 0) {
             path[count] = 0;
             setenv(ENV_NAME, path, 1);
-        }else{
+        }
+        else {
             setenv(ENV_NAME, argv[0], 1);
         }
 

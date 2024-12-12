@@ -5,7 +5,7 @@
 
 using namespace std;
 
-void writeHeader(ofstream &result, string program_name)
+void writeHeader(ofstream& result, string program_name)
 {
     auto now = chrono::system_clock::now();
     auto time = chrono::system_clock::to_time_t(now);
@@ -22,7 +22,7 @@ void writeHeader(ofstream &result, string program_name)
 <div class="head">
 <div class="info">
 <span class="info-title">command:</span> <span class="info-value info-value-path">)" +
-                  program_name + R"(</span>
+program_name + R"(</span>
 </div>
 <div class="info">
 <span class="info-title">start time:</span> <span class="info-value">)";
@@ -41,7 +41,7 @@ void writeHeader(ofstream &result, string program_name)
     result.flush();
 }
 
-void writeLine(ofstream &result, string line, string timeStr, bool isError)
+void writeLine(ofstream& result, string line, string timeStr, bool isError)
 {
     long long milliseconds = stoll(timeStr);
     auto duration = chrono::milliseconds(milliseconds);
@@ -59,7 +59,7 @@ void writeLine(ofstream &result, string line, string timeStr, bool isError)
     result.flush();
 }
 
-void writeLink(ofstream &result, string timeStr, string pid, string name)
+void writeLink(ofstream& result, string timeStr, string pid, string name)
 {
     long long milliseconds = stoll(timeStr);
     auto duration = chrono::milliseconds(milliseconds);
