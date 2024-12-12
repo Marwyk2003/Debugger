@@ -4,3 +4,4 @@
 #define FD_ERR 4
 #define BEGIN_OUT "B_OUT"
 #define END_OUT "E_OUT"
+#define HEADER_CONST 0
