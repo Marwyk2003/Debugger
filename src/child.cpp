@@ -7,10 +7,15 @@
 
 #include "const.hpp"
 #include "child.hpp"
+#include "fds_listner.hpp"
 
 using namespace std;
 
 void sendPacket(int, bool&, char*, char*);
+
+static void process(int end, char* buf, int fd){
+    write(STDOUT_FILENO, buf, end);
+}
 
 int childProcess(char* program, char* argv[])
 {
@@ -37,34 +42,7 @@ int childProcess(char* program, char* argv[])
     dup2(pipe_fd_out[0], FD_OUT);
     dup2(pipe_fd_err[0], FD_ERR);
 
-    // SELECT
-    fd_set read_fds;
-    int select_fd = 5;
-    fcntl(FD_OUT, F_SETFL, O_NONBLOCK);
-    fcntl(FD_ERR, F_SETFL, O_NONBLOCK);
-
-    char buf[BUF_SIZE];
-    bool out_ended = false, err_ended = false;
-    while (!out_ended || !err_ended)
-    {
-        FD_ZERO(&read_fds);
-        FD_SET(FD_OUT, &read_fds);
-        FD_SET(FD_ERR, &read_fds);
-
-        int s = select(select_fd, &read_fds, nullptr, nullptr, nullptr);
-        if (s == -1)
-            break;
-
-        if (!out_ended && FD_ISSET(FD_OUT, &read_fds))
-        {
-            sendPacket(FD_OUT, out_ended, buf, program);
-        }
-
-        if (!err_ended && FD_ISSET(FD_ERR, &read_fds))
-        {
-            sendPacket(FD_ERR, err_ended, buf, program);
-        }
-    }
+    listen_on_fds(process);
     return 0;
 }
 

@@ -32,9 +32,9 @@ void process_buffer(int fd, char* buf, int & buf_end, bool& ended, void (*proces
             }
             break;
         }
-        process(i, buf, fd);
-        memcpy(buf, buf + i, i*sizeof(char));
-        buf_end -= i;
+        process(i + 1, buf, fd);
+        memmove(buf, buf + i + 1, (buf_end - i - 1)*sizeof(char));
+        buf_end -= i + 1;
     }
 }
 
