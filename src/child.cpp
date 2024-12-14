@@ -10,24 +10,22 @@
 #include "child.hpp"
 #include "fds_listner.hpp"
 
-using namespace std;
 
+using namespace std;
 void sendPacket(int, bool&, char*, char*);
 
-static void process(int end, char* buf, int fd){
+static void process(int end, char* buf, int fd) {
     write(STDOUT_FILENO, buf, end);
 }
 
-int childProcess(char* program, char* argv[])
-{
+int childProcess(char* program, char* argv[]) {
     // create pipe LISTENER <- PROGRAM
     int pipe_fd_out[2], pipe_fd_err[2];
     pipe(pipe_fd_out);
     pipe(pipe_fd_err);
 
     pid_t pid = fork();
-    if (pid == 0)
-    {
+    if (pid == 0) {
         // PROGRAM -> LISTENER
         close(pipe_fd_out[0]);
         close(pipe_fd_err[0]);
@@ -56,8 +54,7 @@ void sendPacket(int fd, bool& input_ended, char* buf, char* program_name) {
     int rbytes = read(fd, buf + pref.size(), BUF_SIZE);
     if (rbytes <= 0)
         input_ended = true;
-    else
-    {
+    else {
         memcpy(buf, pref.c_str(), pref.size());                      // copy prefix
         memcpy(buf + rbytes + pref.size(), suf.c_str(), suf.size()); // copy suffix
         write(fd - 2, buf, pref.size() + rbytes + suf.size());

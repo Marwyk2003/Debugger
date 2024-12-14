@@ -4,8 +4,7 @@
 #include <unistd.h>
 #include "const.hpp"
 
-struct package_header
-{
+struct package_header {
     int header = HEADER_CONST;
     int parent_pid;
     int pid;

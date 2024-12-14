@@ -15,15 +15,13 @@
 
 using namespace std;
 
-int rootProcess()
-{
+int rootProcess() {
     map<string, ofstream> pids;
     pids.clear();
 
-    auto proc = [&pids](int end, char* buf, int fd)-> void {
+    auto proc = [&pids](int end, char* buf, int fd) {
         write(STDOUT_FILENO, buf, end);
-        return;
-    };
+        };
 
     listen_on_fds(proc);
 
@@ -32,19 +30,16 @@ int rootProcess()
     return 0;
 }
 
-int main(int, char* argv[])
-{
+int main(int, char* argv[]) {
     char* env_var = getenv(ENV_NAME);
-    if (!env_var)
-    {
+    if (!env_var) {
 
         char path[PATH_MAX];
         int count = readlink("/proc/self/exe", path, PATH_MAX);
         if (count > 0) {
             path[count] = 0;
             setenv(ENV_NAME, path, 1);
-        }
-        else {
+        } else {
             setenv(ENV_NAME, argv[0], 1);
         }
 
@@ -54,8 +49,7 @@ int main(int, char* argv[])
         pipe(pipe_fd_err);
 
         pid_t pid = fork();
-        if (pid != 0)
-        {
+        if (pid != 0) {
             // ROOT <- CHILD
             close(pipe_fd_out[1]);
             close(pipe_fd_err[1]);
@@ -65,9 +59,7 @@ int main(int, char* argv[])
             int exit_code = rootProcess();
             unsetenv(ENV_NAME);
             return exit_code;
-        }
-        else
-        {
+        } else {
             // CHILD -> ROOT
             close(pipe_fd_out[0]);
             close(pipe_fd_err[0]);
