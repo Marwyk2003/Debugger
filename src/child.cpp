@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <chrono>
 #include <string>
+#include <functional>
 
 #include "const.hpp"
 #include "child.hpp"

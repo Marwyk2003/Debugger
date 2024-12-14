@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <filesystem>
 #include <limits.h>
+#include <functional>
 
 #include "parser.hpp"
 #include "fds_listner.hpp"
@@ -14,16 +15,17 @@
 
 using namespace std;
 
-static void process(int end, char* buf, int fd){
-    write(STDOUT_FILENO, buf, end);
-}
-
 int rootProcess()
 {
     map<string, ofstream> pids;
     pids.clear();
 
-    listen_on_fds(process);
+    auto proc = [&pids](int end, char* buf, int fd)-> void {
+        write(STDOUT_FILENO, buf, end);
+        return;
+    };
+
+    listen_on_fds(proc);
 
     for (auto& [k, v] : pids)
         v.close();

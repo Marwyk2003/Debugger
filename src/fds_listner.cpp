@@ -4,11 +4,12 @@
 #include <fcntl.h>
 #include <chrono>
 #include <string>
+#include <functional>
 
 #include "fds_listner.hpp"
 #include "const.hpp"
 
-void read_to_buffer(int fd, char* buf, int& buf_end, bool& ended){
+static void read_to_buffer(int fd, char* buf, int& buf_end, bool& ended){
     ssize_t bytes_read = read(fd, buf + buf_end, BUF_SIZE - buf_end);
     if (bytes_read > 0) {
         buf_end += bytes_read;
@@ -17,7 +18,7 @@ void read_to_buffer(int fd, char* buf, int& buf_end, bool& ended){
     }
 }
 
-void process_buffer(int fd, char* buf, int & buf_end, bool& ended, void (*process)(int, char*, int)){
+static void process_buffer(int fd, char* buf, int & buf_end, bool& ended, std::function<void(int,char*,int)> process){
     while(true){
         int i;
         for(i =0; i<buf_end; i++){
@@ -38,7 +39,7 @@ void process_buffer(int fd, char* buf, int & buf_end, bool& ended, void (*proces
     }
 }
 
-void listen_on_fds(void (*process)(int, char*, int)){
+void listen_on_fds(std::function<void(int,char*,int)> process){
 
     fd_set read_fds;
     int select_fd = 5;
