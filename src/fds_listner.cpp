@@ -7,6 +7,7 @@
 #include <functional>
 
 #include "fds_listner.hpp"
+#include "package_header.hpp"
 #include "const.hpp"
 
 static void read_to_buffer(int fd, char* buf, int& buf_end, bool& ended) {
@@ -19,16 +20,21 @@ static void read_to_buffer(int fd, char* buf, int& buf_end, bool& ended) {
 }
 
 static void process_buffer(char* buf, int& buf_end, bool& ended, std::function<void(int, char*)> process) {
+    if (buf_end == 0) return;
+    unsigned int header_key;
+    int start, i;
     while (true) {
-        int i;
-        for (i = 0; i < buf_end; i++) {
+        memcpy(&header_key, buf, sizeof(int));
+        // TODO: improve performance by using standard functions (find)
+        start = (header_key == HEADER_CONST) ? sizeof(package_header) : 0;
+        for (i = start; i < buf_end; i++) {
             if (buf[i] == '\n') {
                 break;
             }
         }
-        if (i == buf_end) {
+        if (i >= buf_end) {
             if (ended) {
-                process(i, buf);
+                process(buf_end, buf);
                 buf_end = 0;
             }
             break;

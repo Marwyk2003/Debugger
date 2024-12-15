@@ -9,13 +9,33 @@
 #include "const.hpp"
 #include "child.hpp"
 #include "fds_listner.hpp"
-
+#include "package_header.hpp"
 
 using namespace std;
-void sendPacket(int, bool&, char*, char*);
 
 static void process(int end, char* buf, int fd) {
-    write(STDOUT_FILENO, buf, end);
+    int fd_out = fd == FD_ERR ? STDERR_FILENO : STDOUT_FILENO;
+    package_header head;
+    memcpy(&head, buf, sizeof(package_header));
+
+    if (end < sizeof(package_header) || head.header_key != HEADER_CONST) { // new line creating header
+        auto now = chrono::system_clock::now();
+        auto currentTime = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
+
+        head.time = 0;
+        head.pid = getpid();
+        head.parent_pid = 0;
+        head.header_key = HEADER_CONST;
+
+        write(fd_out, &head, sizeof(package_header));
+    } else { // line with a header
+        if (head.parent_pid == 0) { // line without parent
+            head.parent_pid = getpid();
+            head.time += 1;
+            memcpy(buf, &head, sizeof(package_header));
+        }
+    }
+    write(fd_out, buf, end);
 }
 
 int childProcess(char* program, char* argv[]) {
@@ -43,20 +63,4 @@ int childProcess(char* program, char* argv[]) {
 
     listen_on_fds(process);
     return 0;
-}
-
-void sendPacket(int fd, bool& input_ended, char* buf, char* program_name) {
-    auto now = chrono::system_clock::now();
-    auto currentTime = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
-
-    string pref = BEGIN_OUT + string("\n") + to_string(getpid()) + "\n" + program_name + '\n' + to_string(currentTime) + "\n", suf = END_OUT + string("\n");
-
-    int rbytes = read(fd, buf + pref.size(), BUF_SIZE);
-    if (rbytes <= 0)
-        input_ended = true;
-    else {
-        memcpy(buf, pref.c_str(), pref.size());                      // copy prefix
-        memcpy(buf + rbytes + pref.size(), suf.c_str(), suf.size()); // copy suffix
-        write(fd - 2, buf, pref.size() + rbytes + suf.size());
-    }
 }

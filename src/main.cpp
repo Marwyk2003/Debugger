@@ -10,6 +10,7 @@
 
 #include "parser.hpp"
 #include "fds_listner.hpp"
+#include "package_header.hpp"
 #include "child.hpp"
 #include "const.hpp"
 
@@ -20,7 +21,9 @@ int rootProcess() {
     pids.clear();
 
     auto proc = [&pids](int end, char* buf, int fd) {
-        write(STDOUT_FILENO, buf, end);
+        if (end == sizeof(package_header)) return; // empty log early return;
+        parse_buffer(pids, buf, fd == FD_ERR, end);
+        write(fd - 2, buf + sizeof(package_header), end - sizeof(package_header));
         };
 
     listen_on_fds(proc);

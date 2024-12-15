@@ -5,9 +5,9 @@
 #include "const.hpp"
 
 struct package_header {
-    int header = HEADER_CONST;
-    int parent_pid;
-    int pid;
+    unsigned int header_key;
+    pid_t parent_pid;
+    pid_t pid;
     int64_t time;
 };
 
