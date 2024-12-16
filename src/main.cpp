@@ -20,10 +20,10 @@ int rootProcess() {
     map<string, ofstream> pids;
     pids.clear();
 
-    auto proc = [&pids](int end, char* buf, int fd) {
-        if (end == sizeof(package_header)) return; // empty log early return;
-        parse_buffer(pids, buf, fd == FD_ERR, end);
-        write(fd - 2, buf + sizeof(package_header), end - sizeof(package_header));
+    auto proc = [&pids](int size, char* buf, int fd) {
+        if (size == sizeof(package_header)) return; // empty log early return;
+        parse_buffer(pids, buf, fd == STDERR_FILENO, size);
+        write(fd, buf + sizeof(package_header), size - sizeof(package_header));
         };
 
     listen_on_fds(proc);

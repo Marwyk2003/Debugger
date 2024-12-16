@@ -13,21 +13,20 @@
 
 using namespace std;
 
-static void process(int end, char* buf, int fd) {
-    int fd_out = fd == FD_ERR ? STDERR_FILENO : STDOUT_FILENO;
+static void process(int size, char* buf, int fd) {
     package_header head;
     memcpy(&head, buf, sizeof(package_header));
 
-    if (end < sizeof(package_header) || head.header_key != HEADER_CONST) { // new line creating header
+    if (size < sizeof(package_header) || head.header_key != HEADER_CONST) { // new line creating header
         auto now = chrono::system_clock::now();
         auto currentTime = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
 
-        head.time = 0;
+        head.time = currentTime;
         head.pid = getpid();
         head.parent_pid = 0;
         head.header_key = HEADER_CONST;
 
-        write(fd_out, &head, sizeof(package_header));
+        write(fd, &head, sizeof(package_header));
     } else { // line with a header
         if (head.parent_pid == 0) { // line without parent
             head.parent_pid = getpid();
@@ -35,7 +34,7 @@ static void process(int end, char* buf, int fd) {
             memcpy(buf, &head, sizeof(package_header));
         }
     }
-    write(fd_out, buf, end);
+    write(fd, buf, size);
 }
 
 int childProcess(char* program, char* argv[]) {
