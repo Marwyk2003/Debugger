@@ -6,76 +6,43 @@
 #include <iomanip>
 #include <filesystem>
 #include <limits.h>
+#include <functional>
 
 #include "parser.hpp"
+#include "fds_listner.hpp"
+#include "package_header.hpp"
 #include "child.hpp"
 #include "const.hpp"
 
 using namespace std;
 
-int rootProcess()
-{
+int rootProcess() {
     map<string, ofstream> pids;
     pids.clear();
 
-    // SELECT
-    fd_set read_fds;
-    int select_fd = 5;
-    fcntl(FD_OUT, F_SETFL, O_NONBLOCK);
-    fcntl(FD_ERR, F_SETFL, O_NONBLOCK);
+    auto proc = [&pids](int size, char* buf, int fd) {
+        if (size == sizeof(package_header)) return; // empty log early return;
+        parse_buffer(pids, buf, fd == STDERR_FILENO, size);
+        write(fd, buf + sizeof(package_header), size - sizeof(package_header));
+        };
 
-    char buf[BUF_SIZE];
-    int rbytes;
-    bool out_ended = false, err_ended = false;
-    while (!out_ended || !err_ended)
-    {
-        FD_ZERO(&read_fds);
-        FD_SET(FD_OUT, &read_fds);
-        FD_SET(FD_ERR, &read_fds);
-
-        int s = select(select_fd, &read_fds, nullptr, nullptr, nullptr);
-        if (s == -1)
-            break;
-
-        if (!out_ended && FD_ISSET(FD_OUT, &read_fds))
-        {
-            memset(buf, 0, sizeof(buf));
-            rbytes = read(FD_OUT, buf, BUF_SIZE);
-            if (rbytes <= 0)
-                out_ended = true;
-            else
-                parse_buffer(pids, buf, false);
-        }
-
-        if (!err_ended && FD_ISSET(FD_ERR, &read_fds))
-        {
-            memset(buf, 0, sizeof(buf));
-            rbytes = read(FD_ERR, buf, BUF_SIZE);
-            if (rbytes <= 0)
-                err_ended = true;
-            else
-                parse_buffer(pids, buf, true);
-        }
-    }
+    listen_on_fds(proc);
 
     for (auto& [k, v] : pids)
         v.close();
     return 0;
 }
 
-int main(int, char* argv[])
-{
+int main(int, char* argv[]) {
     char* env_var = getenv(ENV_NAME);
-    if (!env_var)
-    {
+    if (!env_var) {
 
         char path[PATH_MAX];
         int count = readlink("/proc/self/exe", path, PATH_MAX);
         if (count > 0) {
             path[count] = 0;
             setenv(ENV_NAME, path, 1);
-        }
-        else {
+        } else {
             setenv(ENV_NAME, argv[0], 1);
         }
 
@@ -85,8 +52,7 @@ int main(int, char* argv[])
         pipe(pipe_fd_err);
 
         pid_t pid = fork();
-        if (pid != 0)
-        {
+        if (pid != 0) {
             // ROOT <- CHILD
             close(pipe_fd_out[1]);
             close(pipe_fd_err[1]);
@@ -96,9 +62,7 @@ int main(int, char* argv[])
             int exit_code = rootProcess();
             unsetenv(ENV_NAME);
             return exit_code;
-        }
-        else
-        {
+        } else {
             // CHILD -> ROOT
             close(pipe_fd_out[0]);
             close(pipe_fd_err[0]);

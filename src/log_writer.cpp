@@ -5,8 +5,7 @@
 
 using namespace std;
 
-void writeHeader(ofstream& result, string program_name)
-{
+void writeHeader(ofstream& result, string program_name) {
     auto now = chrono::system_clock::now();
     auto time = chrono::system_clock::to_time_t(now);
     result << R"(<!DOCTYPE html>
@@ -41,8 +40,7 @@ program_name + R"(</span>
     result.flush();
 }
 
-void writeLine(ofstream& result, string line, string timeStr, bool isError)
-{
+void writeLine(ofstream& result, string line, string timeStr, bool isError) {
     long long milliseconds = stoll(timeStr);
     auto duration = chrono::milliseconds(milliseconds);
     auto time_point = chrono::system_clock::time_point(duration);
@@ -59,8 +57,7 @@ void writeLine(ofstream& result, string line, string timeStr, bool isError)
     result.flush();
 }
 
-void writeLink(ofstream& result, string timeStr, string pid, string name)
-{
+void writeLink(ofstream& result, string timeStr, string pid, string name) {
     long long milliseconds = stoll(timeStr);
     auto duration = chrono::milliseconds(milliseconds);
     auto time_point = chrono::system_clock::time_point(duration);
