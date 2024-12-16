@@ -11,7 +11,6 @@
 using namespace std;
 
 void parse_buffer(map<string, ofstream>& pidMap, char* buf, bool isError, int end) {
-    istringstream stream(buf);
     string pid, ppid, name, time;
     package_header head;
     char tmp[BUF_SIZE];
