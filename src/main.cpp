@@ -13,6 +13,7 @@
 #include "package_header.hpp"
 #include "child.hpp"
 #include "const.hpp"
+#include "colors.hpp"
 
 using namespace std;
 
@@ -23,7 +24,9 @@ int rootProcess() {
     auto proc = [&pids](int size, char* buf, int fd) {
         if (size == sizeof(package_header)) return; // empty log early return;
         parse_buffer(pids, buf, fd == STDERR_FILENO, size);
+        if (fd == STDERR_FILENO) write(fd, RED, 6);
         write(fd, buf + sizeof(package_header), size - sizeof(package_header));
+        if (fd == STDERR_FILENO) write(fd, RESET, 5);
         };
 
     listen_on_fds(proc);
