@@ -5,3 +5,4 @@
 #define BEGIN_OUT "B_OUT"
 #define END_OUT "E_OUT"
 #define HEADER_CONST 4278057967
+#define DEFAULT_DEBUG_OUTPUT_DIR "debugger_logs"

@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <limits.h>
 #include <functional>
+#include <sys/stat.h>
 
 #include "parser.hpp"
 #include "fds_listner.hpp"
@@ -48,6 +49,9 @@ int main(int, char* argv[]) {
         } else {
             setenv(ENV_NAME, argv[0], 1);
         }
+
+        char dir[] = DEFAULT_DEBUG_OUTPUT_DIR;
+        mkdir(dir, 0777);
 
         // create pipe ROOT <- LISTENER 1
         int pipe_fd_out[2], pipe_fd_err[2];
