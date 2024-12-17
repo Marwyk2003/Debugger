@@ -31,6 +31,8 @@ program_name + R"(</span>
 <div class="info">
 <span class="info-title">last entry:</span> <span class="info-value"></span>
 </div>
+<div class="info">
+<span class="info-title exitno">exit ?</span>
 </div>
 <div class="line"></div>
 <div class="entries">

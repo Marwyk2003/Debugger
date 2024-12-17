@@ -5,6 +5,10 @@
 #include <chrono>
 #include <string>
 #include <functional>
+#include <sys/wait.h>
+#include <fstream>
+#include <chrono>
+#include <iomanip>
 
 #include "const.hpp"
 #include "child.hpp"
@@ -37,6 +41,29 @@ static void process(int size, char* buf, int fd) {
     write(fd, buf, size);
 }
 
+static void writeInfoToTmpFiles(pid_t pid) {
+    int status = 0;
+    pid_t childPid = waitpid(pid, &status, 0);
+    auto now = chrono::system_clock::now(); // last entry
+    auto time = chrono::system_clock::to_time_t(now);
+    
+    int exitCode = -1;
+    if (childPid > 0 && WIFEXITED(status)) {
+       exitCode = WEXITSTATUS(status);
+    }
+
+    pid_t codedPid = getpid();
+    ofstream exitCodeStream(string(TMP_INFO_DIR_PATH) + "/exitcode_" + to_string(codedPid));
+    exitCodeStream << exitCode;
+    exitCodeStream.flush();
+    exitCodeStream.close();
+
+    ofstream lastEntryStream(string(TMP_INFO_DIR_PATH) + "/lastentry_" + to_string(codedPid));
+    lastEntryStream << put_time(localtime(&time), "%Y-%m-%d %H:%M:%S");
+    lastEntryStream.flush();
+    lastEntryStream.close();
+}
+
 int childProcess(char* program, char* argv[]) {
     // create pipe LISTENER <- PROGRAM
     int pipe_fd_out[2], pipe_fd_err[2];
@@ -61,5 +88,8 @@ int childProcess(char* program, char* argv[]) {
     dup2(pipe_fd_err[0], FD_ERR);
 
     listen_on_fds(process);
+
+    writeInfoToTmpFiles(pid);
+
     return 0;
 }
