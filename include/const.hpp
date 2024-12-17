@@ -6,3 +6,4 @@
 #define END_OUT "E_OUT"
 #define HEADER_CONST 4278057967
 #define DEFAULT_DEBUG_OUTPUT_DIR "debugger_logs"
+#define TMP_INFO_DIR_PATH "/tmp/debugger"

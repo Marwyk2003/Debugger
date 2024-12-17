@@ -15,6 +15,7 @@
 #include "child.hpp"
 #include "const.hpp"
 #include "colors.hpp"
+#include "utilz.hpp"
 
 using namespace std;
 
@@ -40,7 +41,6 @@ int rootProcess() {
 int main(int, char* argv[]) {
     char* env_var = getenv(ENV_NAME);
     if (!env_var) {
-
         char path[PATH_MAX];
         int count = readlink("/proc/self/exe", path, PATH_MAX);
         if (count > 0) {
@@ -52,6 +52,10 @@ int main(int, char* argv[]) {
 
         char dir[] = DEFAULT_DEBUG_OUTPUT_DIR;
         mkdir(dir, 0777);
+        char info_dir[] = TMP_INFO_DIR_PATH;
+        mkdir(info_dir, 0777);
+        deleteContentOfDir(string(TMP_INFO_DIR_PATH));
+        createStyles(string(DEFAULT_DEBUG_OUTPUT_DIR));
 
         // create pipe ROOT <- LISTENER 1
         int pipe_fd_out[2], pipe_fd_err[2];
