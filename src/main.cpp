@@ -13,6 +13,7 @@
 #include "package_header.hpp"
 #include "child.hpp"
 #include "const.hpp"
+#include "call_handler.hpp"
 
 using namespace std;
 
@@ -34,6 +35,10 @@ int rootProcess() {
 }
 
 int main(int, char* argv[]) {
+    if (string(argv[1]) == "--callhandler") {
+        callhandlerProcess(argv[2], argv + 2); // ends with exec
+    }
+
     char* debug_var = getenv(ENV_DEBUG);
 
     if (!debug_var) {
@@ -42,8 +47,12 @@ int main(int, char* argv[]) {
         if (count > 0) {
             path[count] = 0;
             setenv(ENV_DEBUG, path, 1);
+            string callhandler_var = string(path) + " --callhandler";
+            setenv(ENV_CALLHANDLER, callhandler_var.c_str(), 1);
         } else {
             setenv(ENV_DEBUG, argv[0], 1);
+            string callhandler_var = string(argv[0]) + " --callhandler";
+            setenv(ENV_CALLHANDLER, callhandler_var.c_str(), 1);
         }
 
         // create pipe ROOT <- LISTENER 1
@@ -71,7 +80,7 @@ int main(int, char* argv[]) {
         }
     }
 
-    char* static_pid = getenv("DEBUG_STATIC_PID");
+    char* static_pid = getenv(ENV_STATIC_PID);
     int exit_code = childProcess(argv[1], argv + 1, static_pid);
     return exit_code;
 }
