@@ -26,8 +26,9 @@ void parse_buffer(map<string, ofstream>& pidMap, char* buf, bool isError, int en
 
     if (pidMap.find(pid) == pidMap.end()) {
         pidMap[pid].open("result_" + pid + ".html", ios::out | ios::trunc);
-        writeHeader(pidMap[pid], name);
-        writeLink(pidMap[ppid], time, pid, "link");
+        writeHeader(pidMap[pid], line);
+        writeLink(pidMap[ppid], time, pid, line);
+        return;
     }
     ofstream& s = pidMap[pid];
     writeLine(s, line, time, isError);
