@@ -52,6 +52,9 @@ int childProcess(char* program, char* argv[], char* static_pid) {
         dup2(pipe_fd_out[1], STDOUT_FILENO);
         dup2(pipe_fd_err[1], STDERR_FILENO);
 
+        write(STDOUT_FILENO, program, strlen(program));
+        write(STDOUT_FILENO, "\n", 1);
+
         execvp(program, argv);
     }
 
