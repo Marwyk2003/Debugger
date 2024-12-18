@@ -24,12 +24,16 @@ void parse_buffer(map<string, ofstream>& pidMap, char* buf, bool isError, int en
     ppid = to_string(head.parent_pid);
     time = to_string(head.time);
 
-    if (pidMap.find(pid) == pidMap.end()) {
-        pidMap[pid].open("result_" + pid + ".html", ios::out | ios::trunc);
-        writeHeader(pidMap[pid], line);
-        writeLink(pidMap[ppid], time, pid, line);
-        return;
+    if (head.type == 0) {
+        if (pidMap.find(pid) == pidMap.end()) {
+            string path = string() + "/tmp/result_" + pid + ".html"; // TODO
+            pidMap[pid].open(path, ios::out | ios::trunc);
+            writeHeader(pidMap[pid], line);
+            writeLink(pidMap[ppid], time, pid, line);
+        }
+        ofstream& s = pidMap[pid];
+        writeLine(s, line, time, isError);
+    } else {
+        writeLink(pidMap[ppid], time, pid, "link");
     }
-    ofstream& s = pidMap[pid];
-    writeLine(s, line, time, isError);
 }

@@ -13,6 +13,7 @@
 #include "package_header.hpp"
 #include "child.hpp"
 #include "const.hpp"
+#include "call_handler.hpp"
 
 using namespace std;
 
@@ -34,16 +35,24 @@ int rootProcess() {
 }
 
 int main(int, char* argv[]) {
-    char* env_var = getenv(ENV_NAME);
-    if (!env_var) {
+    if (string(argv[1]) == "--callhandler") {
+        callhandlerProcess(argv[2], argv + 2); // ends with exec
+    }
 
+    char* debug_var = getenv(ENV_DEBUG);
+
+    if (!debug_var) {
         char path[PATH_MAX];
         int count = readlink("/proc/self/exe", path, PATH_MAX);
         if (count > 0) {
             path[count] = 0;
-            setenv(ENV_NAME, path, 1);
+            setenv(ENV_DEBUG, path, 1);
+            string callhandler_var = string(path) + " --callhandler";
+            setenv(ENV_CALLHANDLER, callhandler_var.c_str(), 1);
         } else {
-            setenv(ENV_NAME, argv[0], 1);
+            setenv(ENV_DEBUG, argv[0], 1);
+            string callhandler_var = string(argv[0]) + " --callhandler";
+            setenv(ENV_CALLHANDLER, callhandler_var.c_str(), 1);
         }
 
         // create pipe ROOT <- LISTENER 1
@@ -60,7 +69,7 @@ int main(int, char* argv[]) {
             dup2(pipe_fd_err[0], FD_ERR);
 
             int exit_code = rootProcess();
-            unsetenv(ENV_NAME);
+            unsetenv("DEBUG");
             return exit_code;
         } else {
             // CHILD -> ROOT
@@ -70,6 +79,8 @@ int main(int, char* argv[]) {
             dup2(pipe_fd_err[1], STDERR_FILENO);
         }
     }
-    int exit_code = childProcess(argv[1], argv + 1);
+
+    char* static_pid = getenv(ENV_STATIC_PID);
+    int exit_code = childProcess(argv[1], argv + 1, static_pid);
     return exit_code;
 }

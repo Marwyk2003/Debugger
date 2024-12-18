@@ -13,7 +13,7 @@
 
 using namespace std;
 
-static void process(int size, char* buf, int fd) {
+static void process(int size, char* buf, int fd, pid_t pid) {
     package_header head;
     memcpy(&head, buf, sizeof(package_header));
 
@@ -21,8 +21,9 @@ static void process(int size, char* buf, int fd) {
         auto now = chrono::system_clock::now();
         auto currentTime = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
 
+        head.type = 0;
         head.time = currentTime;
-        head.pid = getpid();
+        head.pid = pid;
         head.parent_pid = 0;
         head.header_key = HEADER_CONST;
 
@@ -37,14 +38,14 @@ static void process(int size, char* buf, int fd) {
     write(fd, buf, size);
 }
 
-int childProcess(char* program, char* argv[]) {
+int childProcess(char* program, char* argv[], char* static_pid) {
     // create pipe LISTENER <- PROGRAM
     int pipe_fd_out[2], pipe_fd_err[2];
     pipe(pipe_fd_out);
     pipe(pipe_fd_err);
 
-    pid_t pid = fork();
-    if (pid == 0) {
+    pid_t fork_pid = fork();
+    if (fork_pid == 0) {
         // PROGRAM -> LISTENER
         close(pipe_fd_out[0]);
         close(pipe_fd_err[0]);
@@ -63,6 +64,7 @@ int childProcess(char* program, char* argv[]) {
     dup2(pipe_fd_out[0], FD_OUT);
     dup2(pipe_fd_err[0], FD_ERR);
 
-    listen_on_fds(process);
+    pid_t pid = static_pid ? atoll(static_pid) : getpid();
+    listen_on_fds([pid](int size, char* buffer, int fd) {process(size, buffer, fd, pid);});
     return 0;
 }

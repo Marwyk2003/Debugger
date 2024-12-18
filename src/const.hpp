@@ -1,4 +1,7 @@
-#define ENV_NAME "DEBUG"
+#define ENV_DEBUG "DEBUG"
+#define ENV_CALLHANDLER "CALLHANDLER"
+#define ENV_STATIC_PID "DEBUG_STATIC_PID"
+
 #define BUF_SIZE 1024
 #define FD_OUT 3
 #define FD_ERR 4
