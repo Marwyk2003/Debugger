@@ -13,5 +13,7 @@ void writeLine(std::ofstream& file_stream, std::string line, std::string time_st
 
 void writeLink(std::ofstream& result, std::string time_str, std::string pid, std::string name);
 
+void registerLink(std::string time_str, std::string pid, std::string name);
+
 
 #endif // LOG_WRITER_HPP

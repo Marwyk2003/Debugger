@@ -5,7 +5,11 @@
 #include <unistd.h>
 #include <fstream>
 
+#include <iostream>
+
 #include "utilz.hpp"
+
+
 
 void deleteContentOfDir(const std::string& path) {
     DIR* dir = opendir(path.c_str());
@@ -121,6 +125,10 @@ span.exitno {
 	color: #AAAA00;
 }
 
+div.headder {
+	color:  #F8F8F2;
+	 font-size: 25px;
+}
 
 div.entries {
 	padding: 10px;
@@ -204,4 +212,33 @@ span.entry-exit {
 })";
     
     styles.close();
+}
+
+
+void createIndex(const std::string& path) {
+    std::ifstream fileCheck(path + "/index.html");    
+    if (fileCheck.good()) return;
+
+    std::ofstream index(path + "/index.html");
+    index << R"(<!DOCTYPE html>
+<html lang="pl-PL">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="styles.css" />
+<title>test/test-basic.sh
+
+</title>
+</head>
+<body>
+<div class="head">
+<div class="headder"> DEBUGGER </div>
+<div class="info">
+<span class="info-title">list of recent debugging logs</span>
+</div>
+<div class="line"></div>
+<div class="entries">
+<table>
+<tboby>)";
+
+    index.close();
 }

@@ -8,6 +8,8 @@
 #include "log_writer.hpp"
 #include "package_header.hpp"
 
+#include<iostream>
+
 using namespace std;
 
 void parse_buffer(map<string, ofstream>& pidMap, char* buf, bool isError, int end) {
@@ -23,7 +25,13 @@ void parse_buffer(map<string, ofstream>& pidMap, char* buf, bool isError, int en
     ppid = to_string(head.parent_pid);
     time = to_string(head.time);
 
+    static bool firstOccurence = true;
+
     if (pidMap.find(pid) == pidMap.end()) {
+        if (firstOccurence){
+            firstOccurence = false;
+            registerLink(time, pid, line);
+        }
         pidMap[pid].open(string(DEFAULT_DEBUG_OUTPUT_DIR) + "/result_" + pid + ".html", ios::out | ios::trunc);
         writeHeader(pidMap[pid], line);
         writeLink(pidMap[ppid], time, pid, line);

@@ -108,6 +108,7 @@ int main(int, char* argv[]) {
 
         deleteContentOfDir(string(TMP_INFO_DIR_PATH));
         createStyles(string(DEFAULT_DEBUG_OUTPUT_DIR));
+        createIndex(string(DEFAULT_DEBUG_OUTPUT_DIR));
 
         // create pipe ROOT <- LISTENER 1
         int pipe_fd_out[2], pipe_fd_err[2];
