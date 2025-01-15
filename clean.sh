@@ -1,1 +1,1 @@
-rm result_*.html
+rm -rf debugger_logs

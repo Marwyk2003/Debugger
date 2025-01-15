@@ -5,6 +5,7 @@
 #include <chrono>
 #include <string>
 #include <functional>
+#include <algorithm>
 
 #include "fds_listner.hpp"
 #include "package_header.hpp"
@@ -23,23 +24,19 @@ static bool read_to_buffer(int fd, char* buf, int& buf_size, bool ended) {
 static void process_buffer(char* buf, int& buf_size, bool& ended, std::function<void(int, char*)> process) {
     if (buf_size == 0) return;
     unsigned int header_key;
-    int start, i;
+    int start;
     while (true) {
         memcpy(&header_key, buf, sizeof(int));
-        // TODO: improve performance by using standard functions (find)
         start = (header_key == HEADER_CONST) ? sizeof(package_header) : 0;
-        for (i = start; i < buf_size; i++) {
-            if (buf[i] == '\n') {
-                break;
-            }
-        }
-        if (i >= buf_size) {
+        auto it = std::find(buf + start, buf + start + buf_size, '\n');
+        if (it == buf + start + buf_size) {
             if (ended) {
                 process(buf_size, buf);
                 buf_size = 0;
             }
             break;
         }
+        int i = std::distance(buf, it);
         process(i + 1, buf);
         memmove(buf, buf + i + 1, (buf_size - i - 1) * sizeof(char));
         buf_size -= i + 1;
@@ -47,7 +44,6 @@ static void process_buffer(char* buf, int& buf_size, bool& ended, std::function<
 }
 
 void listen_on_fds(std::function<void(int, char*, int)> process) {
-
     fd_set read_fds;
     int select_fd = 5;
     fcntl(FD_OUT, F_SETFL, O_NONBLOCK);

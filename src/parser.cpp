@@ -10,8 +10,7 @@
 
 using namespace std;
 
-void parse_buffer(map<string, ofstream>& pidMap, char* buf, bool isError, int end) {
-    istringstream stream(buf);
+void parse_buffer(map<string, ofstream>& pidMap, char* buf, bool isError, int end, const string& debugger_path) {
     string pid, ppid, name, time;
     package_header head;
     char tmp[BUF_SIZE];
@@ -26,7 +25,7 @@ void parse_buffer(map<string, ofstream>& pidMap, char* buf, bool isError, int en
 
     if (head.type == 0) {
         if (pidMap.find(pid) == pidMap.end()) {
-            string path = string() + "/tmp/result_" + pid + ".html"; // TODO
+            string path = debugger_path + "/result_" + pid + ".html";
             pidMap[pid].open(path, ios::out | ios::trunc);
             writeHeader(pidMap[pid], line);
             writeLink(pidMap[ppid], time, pid, line);

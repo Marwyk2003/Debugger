@@ -6,24 +6,24 @@ SRC_DIR := src
 OBJ_DIR := obj
 BIN_DIR := bin
 INC_DIR := include
-TEST_DIR := test 
 
 TARGET := $(BIN_DIR)/debugger
 
 SRCS := $(wildcard $(SRC_DIR)/*.cpp)
+SRCS := $(filter-out $(SRC_DIR)/main.cpp, $(SRCS))
 OBJS := $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRCS))
 
 all : check_dirs $(TARGET)
 
-$(TARGET) : $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJS)
+$(TARGET) : $(SRC_DIR)/main.cpp $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(OBJS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 check_dirs:
-	test -d $(OBJ_DIR) || mkdir $(OBJ_DIR)
-	test -d $(BIN_DIR) || mkdir $(BIN_DIR)
+	mkdir -p $(OBJ_DIR)
+	mkdir -p $(BIN_DIR)
 
 clean:
 	rm -rf $(BIN_DIR) $(OBJ_DIR) 
