@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fstream>
+#include <string>
 
 #include <iostream>
 
@@ -241,4 +242,9 @@ void createIndex(const std::string& path) {
 <tboby>)";
 
     index.close();
+}
+
+std::string getDebugDir(){
+    const char* home = std::getenv("HOME");
+    return std::string(home) + "/debugger_logs";
 }

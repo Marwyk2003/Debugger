@@ -27,7 +27,7 @@ static void fillLastEntryAndExit(map<string, ofstream>& pids) {
         if (k == "0") continue;
         ifstream html(string(DEFAULT_DEBUG_OUTPUT_DIR) + "/result_" + k + ".html");
         stringstream buff;
-        buff << html.rdbuf(); 
+        buff << html.rdbuf();
         html.close();
         string content = buff.str();
         
