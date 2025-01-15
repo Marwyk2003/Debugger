@@ -12,7 +12,7 @@
 
 using namespace std;
 
-void parse_buffer(map<string, ofstream>& pidMap, char* buf, bool isError, int end) {
+void parse_buffer(map<string, ofstream>& pidMap, char* buf, bool isError, int end, const string& debugger_path) {
     string pid, ppid, name, time;
     package_header head;
     char tmp[BUF_SIZE];
@@ -27,16 +27,20 @@ void parse_buffer(map<string, ofstream>& pidMap, char* buf, bool isError, int en
 
     static bool firstOccurence = true;
 
-    if (pidMap.find(pid) == pidMap.end()) {
-        if (firstOccurence){
-            firstOccurence = false;
-            registerLink(time, pid, line);
+    if (head.type == 0) {
+        if (pidMap.find(pid) == pidMap.end()) {
+            if (firstOccurence){
+                firstOccurence = false;
+                registerLink(time, pid, line);
+            }
+            string path = debugger_path + "/result_" + pid + ".html";
+            pidMap[pid].open(path, ios::out | ios::trunc);
+            writeHeader(pidMap[pid], line);
+            writeLink(pidMap[ppid], time, pid, line);
         }
-        pidMap[pid].open(string(DEFAULT_DEBUG_OUTPUT_DIR) + "/result_" + pid + ".html", ios::out | ios::trunc);
-        writeHeader(pidMap[pid], line);
-        writeLink(pidMap[ppid], time, pid, line);
-        return;
+        ofstream& s = pidMap[pid];
+        writeLine(s, line, time, isError);
+    } else {
+        writeLink(pidMap[ppid], time, pid, "link");
     }
-    ofstream& s = pidMap[pid];
-    writeLine(s, line, time, isError);
 }
