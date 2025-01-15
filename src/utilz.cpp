@@ -243,8 +243,3 @@ void createIndex(const std::string& path) {
 
     index.close();
 }
-
-std::string getDebugDir(){
-    const char* home = std::getenv("HOME");
-    return std::string(home) + "/debugger_logs";
-}
