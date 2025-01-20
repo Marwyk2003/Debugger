@@ -70,13 +70,13 @@ void writeLink(ofstream& result, string timeStr, string pid, string name) {
     result << "</td><td>&nbsp;</td><td class=\"entry-log entry-link\"><a href=\"result_" << pid << ".html\">" << name << " </a></td></tr>\n";
 }
 
-void registerLink(string timeStr, string pid, string name) {
+void registerLink(string timeStr, string pid, string name, const string& debugger_path) {
     long long milliseconds = stoll(timeStr);
     auto duration = chrono::milliseconds(milliseconds);
     auto time_point = chrono::system_clock::time_point(duration);
     time_t time = chrono::system_clock::to_time_t(time_point);
 
-    ofstream res(std::string(DEFAULT_DEBUG_OUTPUT_DIR) + "/index.html", std::ios::app);
+    ofstream res(debugger_path + "/index.html", std::ios::app);
     res << "<tr><td class=\"entry-time\">";
     res << put_time(localtime(&time), "%Y-%m-%d %H:%M:%S");
     res << "</td><td>&nbsp;</td><td class=\"entry-log entry-link\"><a href=\"result_" << pid << ".html\">" << name << " </a></td></tr>\n";

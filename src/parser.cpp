@@ -31,7 +31,7 @@ void parse_buffer(map<string, ofstream>& pidMap, char* buf, bool isError, int en
         if (pidMap.find(pid) == pidMap.end()) {
             if (firstOccurence){
                 firstOccurence = false;
-                registerLink(time, pid, line);
+                registerLink(time, pid, line, debugger_path);
             }
             string path = debugger_path + "/result_" + pid + ".html";
             pidMap[pid].open(path, ios::out | ios::trunc);
