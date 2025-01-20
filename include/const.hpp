@@ -9,3 +9,4 @@
 #define END_OUT "E_OUT"
 #define HEADER_CONST 4278057967
 #define TMP_INFO_DIR_PATH "/tmp/debugger"
+
