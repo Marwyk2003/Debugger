@@ -4,8 +4,14 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fstream>
+#include <string>
+#include <iostream>
 
 #include "utilz.hpp"
+#include <pwd.h>
+
+void generateIndexHtml(std::string path, std::string styles_path, std::string message);
+void addLink(std::string index_path, std::string self_path, std::string name);
 
 void deleteContentOfDir(const std::string& path) {
     DIR* dir = opendir(path.c_str());
@@ -121,6 +127,10 @@ span.exitno {
 	color: #AAAA00;
 }
 
+div.headder {
+	color:  #F8F8F2;
+	 font-size: 25px;
+}
 
 div.entries {
 	padding: 10px;
@@ -204,4 +214,68 @@ span.entry-exit {
 })";
     
     styles.close();
+}
+
+
+void createIndex(const std::string& path) {
+    std::ifstream servers_file_check(path + "/index.html");    
+    if (servers_file_check.good()) return;
+
+    generateIndexHtml(path, "styles.css", "list of servers");
+
+    char hostname[256];
+    gethostname(hostname, sizeof(hostname));
+    std::string server_path = path + "/" + hostname;
+    mkdir(server_path.c_str(), 0777);
+
+    std::ifstream users_file_check(server_path + "/index.html");
+    if (users_file_check.good()) return;
+
+    generateIndexHtml(server_path, "../styles.css", "list of users");
+
+    addLink(path, server_path, hostname);
+
+    struct passwd *pw = getpwuid(getuid());
+    char* user_name = pw->pw_name;
+    std::string user_path = server_path + "/" + std::string(user_name);
+
+    mkdir(user_path.c_str(), 0777);
+
+    std::ifstream file_check(user_path + "/index.html");
+    if (file_check.good()) return;
+
+    generateIndexHtml(user_path, "../../styles.css", "list of debugged progras");
+    addLink(server_path, user_path, user_name);
+}
+
+
+void generateIndexHtml(std::string path, std::string styles_path, std::string message){
+    std::ofstream index(path + "/index.html");
+    index << R"(<!DOCTYPE html>
+<html lang="pl-PL">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href=)" << styles_path << R"( />
+<title>test/test-basic.sh
+</title>
+</head>
+<body>
+<div class="head">
+<div class="headder"> DEBUGGER </div>
+<div class="info">
+<span class="info-title">)" << message << R"(</span>
+</div>
+<div class="line"></div>
+<div class="entries">
+<table>
+<tboby>)";
+
+    index.close();
+}
+
+void addLink(std::string index_path, std::string self_path, std::string name){
+    std::ofstream res(index_path + "/index.html", std::ios::app);
+    res << "<td class=\"entry-log entry-link\"><a href=" << self_path + "/index.html" << ">" << name << " </a></td></tr>\n";
+    res.flush();
+    res.close();
 }

@@ -25,14 +25,15 @@
 
 using namespace std;
 
-static void fillLastEntryAndExit(map<string, ofstream>& pids, const string& debugger_path) {
+static void fillLastEntryAndExit(map<string, ofstream>& pids, map<string, string>& dataMap) {
     // TODO: make js script to handle it
     for (auto& [k, _] : pids) {
         if (k == "0") continue;
-        ifstream html(debugger_path + "/result_" + k + ".html");
+
+        ifstream html(string(DEFAULT_PATH) + dataMap[k]);
         if (!html) continue;
         stringstream buff;
-        buff << html.rdbuf(); 
+        buff << html.rdbuf();
         html.close();
         string content = buff.str();
         
@@ -62,21 +63,23 @@ static void fillLastEntryAndExit(map<string, ofstream>& pids, const string& debu
         string lastEntryNew = R"(<span class="info-title">last entry:</span><span class="info-value"> )" + lastEntryValue + R"(</span>)";
         pos = content.find(lastEntryOld, pos);
         content.replace(pos, lastEntryOld.length(), lastEntryNew);
-        
-        ofstream res(debugger_path + "/result_" + k + ".html");
+
+        ofstream res(string(DEFAULT_PATH) + dataMap[k]);
         res << content;
         res.flush();
         res.close();
     }
 }
 
-int rootProcess(const string& debugger_path) {
-    map<string, ofstream> pids;
-    pids.clear();
+int rootProcess() {
+    map<string, ofstream> streamMap;
+    map<string, string> dataMap;
+    streamMap.clear();
+    dataMap.clear();
 
-    auto proc = [&pids, &debugger_path](int size, char* buf, int fd) {
+    auto proc = [&streamMap, &dataMap](int size, char* buf, int fd) {
         if (size == sizeof(package_header)) return; // empty log early return;
-        parse_buffer(pids, buf, fd == STDERR_FILENO, size, debugger_path);
+        parse_buffer(streamMap, dataMap, buf, fd == STDERR_FILENO, size);
         if (fd == STDERR_FILENO) write(fd, RED, 6);
         write(fd, buf + sizeof(package_header), size - sizeof(package_header));
         if (fd == STDERR_FILENO) write(fd, RESET, 5);
@@ -84,11 +87,11 @@ int rootProcess(const string& debugger_path) {
 
     listen_on_fds(proc);
 
-    for (auto& [k, v] : pids) {
+    for (auto& [k, v] : streamMap) {
         v.close();
     }
 
-    fillLastEntryAndExit(pids, debugger_path);
+    fillLastEntryAndExit(streamMap, dataMap);
     return 0;
 }
 
@@ -114,9 +117,7 @@ int main(int, char* argv[]) {
         }
 
         mode_t old_mask = umask(0); // just in case
-        struct passwd *pw = getpwuid(getuid());
-        char* dir = pw->pw_dir;
-        string debugger_path = string(dir) + "/debugger_logs";
+        string debugger_path = DEFAULT_PATH;
         mkdir(debugger_path.c_str(), 0777); // TODO think about permissions, maybe too loose
         char info_dir[] = TMP_INFO_DIR_PATH;
         mkdir(info_dir, 0777);
@@ -124,6 +125,8 @@ int main(int, char* argv[]) {
 
         deleteContentOfDir(string(TMP_INFO_DIR_PATH));
         createStyles(debugger_path);
+        createIndex(debugger_path);
+        
 
         // create pipe ROOT <- LISTENER 1
         int pipe_fd_out[2], pipe_fd_err[2];
@@ -138,7 +141,7 @@ int main(int, char* argv[]) {
             dup2(pipe_fd_out[0], FD_OUT);
             dup2(pipe_fd_err[0], FD_ERR);
 
-            int exit_code = rootProcess(debugger_path);
+            int exit_code = rootProcess();
             unsetenv(ENV_DEBUG);
             return exit_code;
         } else {
