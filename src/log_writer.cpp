@@ -1,4 +1,6 @@
 #include<iomanip>
+#include <pwd.h>
+#include <unistd.h>
 
 #include "const.hpp"
 #include "log_writer.hpp"
@@ -59,7 +61,7 @@ void writeLine(ofstream& result, string line, string timeStr, bool isError) {
     result.flush();
 }
 
-void writeLink(ofstream& result, string timeStr, string pid, string name) {
+void writeLink(ofstream& result, string timeStr, string pid, string name, string file_name) {
     long long milliseconds = stoll(timeStr);
     auto duration = chrono::milliseconds(milliseconds);
     auto time_point = chrono::system_clock::time_point(duration);
@@ -67,19 +69,24 @@ void writeLink(ofstream& result, string timeStr, string pid, string name) {
 
     result << "<tr><td class=\"entry-time\">";
     result << put_time(localtime(&time), "%Y-%m-%d %H:%M:%S");
-    result << "</td><td>&nbsp;</td><td class=\"entry-log entry-link\"><a href=\"result_" << pid << ".html\">" << name << " </a></td></tr>\n";
+    result << "</td><td>&nbsp;</td><td class=\"entry-log entry-link\"><a href=" << string(DEFAULT_PATH) + file_name << ">" << name << " </a></td></tr>\n";
 }
 
-void registerLink(string timeStr, string pid, string name, const string& debugger_path) {
+void registerLink(string timeStr, string pid, string name, string file_name) {
     long long milliseconds = stoll(timeStr);
     auto duration = chrono::milliseconds(milliseconds);
     auto time_point = chrono::system_clock::time_point(duration);
     time_t time = chrono::system_clock::to_time_t(time_point);
 
-    ofstream res(debugger_path + "/index.html", std::ios::app);
+    char hostname[256];
+    gethostname(hostname, sizeof(hostname));
+    struct passwd *pw = getpwuid(getuid());
+    char* user_name = pw->pw_name;
+
+    ofstream res(string(DEFAULT_PATH) + "/" + hostname + "/" + user_name + "/index.html", std::ios::app);
     res << "<tr><td class=\"entry-time\">";
     res << put_time(localtime(&time), "%Y-%m-%d %H:%M:%S");
-    res << "</td><td>&nbsp;</td><td class=\"entry-log entry-link\"><a href=\"result_" << pid << ".html\">" << name << " </a></td></tr>\n";
+    res << "</td><td>&nbsp;</td><td class=\"entry-log entry-link\"><a href=" << string(DEFAULT_PATH) + file_name << ">" << name << " </a></td></tr>\n";
     res.flush();
     res.close();
 }
