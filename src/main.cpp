@@ -25,12 +25,19 @@
 
 using namespace std;
 
+inline string getDebuggerPath(){
+    struct passwd *pw = getpwuid(getuid());
+    char* dir = pw->pw_dir;
+    return string(dir) + "/debugger_logs";
+}
+
 static void fillLastEntryAndExit(map<string, ofstream>& pids, map<string, string>& dataMap) {
     // TODO: make js script to handle it
     for (auto& [k, _] : pids) {
         if (k == "0") continue;
 
-        ifstream html(string(DEFAULT_PATH) + dataMap[k]);
+        string debugger_path = getDebuggerPath();
+        ifstream html(debugger_path + dataMap[k]);
         if (!html) continue;
         stringstream buff;
         buff << html.rdbuf();
@@ -64,7 +71,7 @@ static void fillLastEntryAndExit(map<string, ofstream>& pids, map<string, string
         pos = content.find(lastEntryOld, pos);
         content.replace(pos, lastEntryOld.length(), lastEntryNew);
 
-        ofstream res(string(DEFAULT_PATH) + dataMap[k]);
+        ofstream res(debugger_path + dataMap[k]);
         res << content;
         res.flush();
         res.close();
@@ -117,7 +124,7 @@ int main(int, char* argv[]) {
         }
 
         mode_t old_mask = umask(0); // just in case
-        string debugger_path = DEFAULT_PATH;
+        string debugger_path = getDebuggerPath();
         mkdir(debugger_path.c_str(), 0777); // TODO think about permissions, maybe too loose
         char info_dir[] = TMP_INFO_DIR_PATH;
         mkdir(info_dir, 0777);

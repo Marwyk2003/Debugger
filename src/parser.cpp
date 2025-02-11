@@ -42,8 +42,12 @@ void parse_buffer(map<string, ofstream>& streamMap, map<string, string>& dataMap
                 firstOccurence = false;
                 registerLink(time, pid, line, file_name);
             }
+
+            struct passwd *pw = getpwuid(getuid());
+            char* dir = pw->pw_dir;
+            string debugger_path = string(dir) + "/debugger_logs";
             
-            string path = string(DEFAULT_PATH) + file_name;
+            string path = debugger_path + file_name;
             streamMap[pid].open(path, ios::out | ios::trunc);
             writeHeader(streamMap[pid], line);
             writeLink(streamMap[ppid], time, pid, line, file_name);
@@ -73,11 +77,13 @@ string get_file_name(string time, string line){
 
     replace(line.begin(), line.end(), '.', '_');
     replace(line.begin(), line.end(), '/', '_');
+    
 
     char hostname[256];
     gethostname(hostname, sizeof(hostname));
-    string file_name = "/" + time_string + "_" + string(user_name) + "@" + hostname + "_" + line + ".html";
+    string file_name = "/" + time_string + "_" + string(user_name) + "_" + hostname + "_" + line + ".html";
     replace(file_name.begin(), file_name.end(), ' ', '_');
+    replace(file_name.begin(), file_name.end(), ':', '-');
 
     return file_name;
 }
