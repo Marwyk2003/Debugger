@@ -3,6 +3,7 @@
 #include <unistd.h>
 
 #include "const.hpp"
+#include "utilz.hpp"
 #include "log_writer.hpp"
 
 using namespace std;
@@ -67,13 +68,11 @@ void writeLink(ofstream& result, string timeStr, string pid, string name, string
     auto time_point = chrono::system_clock::time_point(duration);
     time_t time = chrono::system_clock::to_time_t(time_point);
 
-    struct passwd *pw = getpwuid(getuid());
-    char* dir = pw->pw_dir;
-    string debugger_path = string(dir) + "/debugger_logs";
+    string debugger_path = getDebuggerPath();
 
     result << "<tr><td class=\"entry-time\">";
     result << put_time(localtime(&time), "%Y-%m-%d %H:%M:%S");
-    result << "</td><td>&nbsp;</td><td class=\"entry-log entry-link\"><a href=" << debugger_path + file_name << ">" << name << " </a></td></tr>\n";
+    result << "</td><td>&nbsp;</td><td class=\"entry-log entry-link\"><a href=" << debugger_path + "/all_logs" + file_name << ">" << name << " </a></td></tr>\n";
 }
 
 void registerLink(string timeStr, string pid, string name, string file_name) {
@@ -86,13 +85,13 @@ void registerLink(string timeStr, string pid, string name, string file_name) {
     gethostname(hostname, sizeof(hostname));
     struct passwd *pw = getpwuid(getuid());
     char* user_name = pw->pw_name;
-    char* dir = pw->pw_dir;
-    string debugger_path = string(dir) + "/debugger_logs";
+
+    string debugger_path = getDebuggerPath();
 
     ofstream res(debugger_path + "/" + hostname + "/" + user_name  + "/index.html", std::ios::app);
     res << "<tr><td class=\"entry-time\">";
     res << put_time(localtime(&time), "%Y-%m-%d %H:%M:%S");
-    res << "</td><td>&nbsp;</td><td class=\"entry-log entry-link\"><a href=" << debugger_path + file_name << ">" << name << " </a></td></tr>\n";
+    res << "</td><td>&nbsp;</td><td class=\"entry-log entry-link\"><a href=" << debugger_path + "/all_logs" + file_name << ">" << name << " </a></td></tr>\n";
     res.flush();
     res.close();
 }

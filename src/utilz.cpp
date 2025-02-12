@@ -8,7 +8,18 @@
 #include <iostream>
 
 #include "utilz.hpp"
+#include "const.hpp"
 #include <pwd.h>
+
+std::string getDebuggerPath(){
+    char* path = getenv(ENV_PATH);
+    if (!path){
+        struct passwd *pw = getpwuid(getuid());
+        char* dir = pw->pw_dir;
+        return std::string(dir) + "/debugger_logs";
+    }
+    return std::string(path) + "/debugger_logs";
+}
 
 void generateIndexHtml(std::string path, std::string styles_path, std::string message);
 void addLink(std::string index_path, std::string self_path, std::string name);
@@ -39,7 +50,7 @@ void deleteContentOfDir(const std::string& path) {
 }
 
 void createStyles(const std::string& path) {
-    std::ofstream styles(path + "/styles.css");
+    std::ofstream styles(path + "/all_logs/styles.css");
     styles << R"(body {
   background-color: #272822;
   margin: 0;
@@ -221,7 +232,7 @@ void createIndex(const std::string& path) {
     std::ifstream servers_file_check(path + "/index.html");    
     if (servers_file_check.good()) return;
 
-    generateIndexHtml(path, "styles.css", "list of servers");
+    generateIndexHtml(path, "all_logs/styles.css", "list of servers");
 
     char hostname[256];
     gethostname(hostname, sizeof(hostname));
@@ -231,7 +242,7 @@ void createIndex(const std::string& path) {
     std::ifstream users_file_check(server_path + "/index.html");
     if (users_file_check.good()) return;
 
-    generateIndexHtml(server_path, "../styles.css", "list of users");
+    generateIndexHtml(server_path, "../all_logs/styles.css", "list of users");
 
     addLink(path, server_path, hostname);
 
@@ -244,7 +255,7 @@ void createIndex(const std::string& path) {
     std::ifstream file_check(user_path + "/index.html");
     if (file_check.good()) return;
 
-    generateIndexHtml(user_path, "../../styles.css", "list of debugged progras");
+    generateIndexHtml(user_path, "../../all_logs/styles.css", "list of debugged progras");
     addLink(server_path, user_path, user_name);
 }
 

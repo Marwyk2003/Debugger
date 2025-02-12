@@ -25,19 +25,13 @@
 
 using namespace std;
 
-inline string getDebuggerPath(){
-    struct passwd *pw = getpwuid(getuid());
-    char* dir = pw->pw_dir;
-    return string(dir) + "/debugger_logs";
-}
-
 static void fillLastEntryAndExit(map<string, ofstream>& pids, map<string, string>& dataMap) {
     // TODO: make js script to handle it
     for (auto& [k, _] : pids) {
         if (k == "0") continue;
 
         string debugger_path = getDebuggerPath();
-        ifstream html(debugger_path + dataMap[k]);
+        ifstream html(debugger_path + "/all_logs" + dataMap[k]);
         if (!html) continue;
         stringstream buff;
         buff << html.rdbuf();
@@ -71,7 +65,7 @@ static void fillLastEntryAndExit(map<string, ofstream>& pids, map<string, string
         pos = content.find(lastEntryOld, pos);
         content.replace(pos, lastEntryOld.length(), lastEntryNew);
 
-        ofstream res(debugger_path + dataMap[k]);
+        ofstream res(debugger_path + "/all_logs" + dataMap[k]);
         res << content;
         res.flush();
         res.close();
@@ -102,8 +96,8 @@ int rootProcess() {
     return 0;
 }
 
-int main(int, char* argv[]) {
-    if (string(argv[1]) == "--callhandler") {
+int main(int argc, char* argv[]) {
+    if (argc > 1 && string(argv[1]) == "--callhandler") {
         callhandlerProcess(argv[2], argv + 2); // ends with exec
     }
 
@@ -126,6 +120,7 @@ int main(int, char* argv[]) {
         mode_t old_mask = umask(0); // just in case
         string debugger_path = getDebuggerPath();
         mkdir(debugger_path.c_str(), 0777); // TODO think about permissions, maybe too loose
+        mkdir((debugger_path + "/all_logs").c_str(), 0777);
         char info_dir[] = TMP_INFO_DIR_PATH;
         mkdir(info_dir, 0777);
         umask(old_mask);
@@ -133,7 +128,8 @@ int main(int, char* argv[]) {
         deleteContentOfDir(string(TMP_INFO_DIR_PATH));
         createStyles(debugger_path);
         createIndex(debugger_path);
-        
+
+        if (argc == 1) return 0;
 
         // create pipe ROOT <- LISTENER 1
         int pipe_fd_out[2], pipe_fd_err[2];

@@ -8,6 +8,7 @@
 #include "const.hpp"
 #include "log_writer.hpp"
 #include "package_header.hpp"
+#include "utilz.hpp"
 
 #include<iostream>
 #include <pwd.h>
@@ -43,11 +44,9 @@ void parse_buffer(map<string, ofstream>& streamMap, map<string, string>& dataMap
                 registerLink(time, pid, line, file_name);
             }
 
-            struct passwd *pw = getpwuid(getuid());
-            char* dir = pw->pw_dir;
-            string debugger_path = string(dir) + "/debugger_logs";
+            string debugger_path = getDebuggerPath();
             
-            string path = debugger_path + file_name;
+            string path = debugger_path + "/all_logs" + file_name;
             streamMap[pid].open(path, ios::out | ios::trunc);
             writeHeader(streamMap[pid], line);
             writeLink(streamMap[ppid], time, pid, line, file_name);
