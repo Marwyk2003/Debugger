@@ -3,6 +3,6 @@
 
 #include "fds_listner.hpp"
 
-int childProcess(char* program, char* argv[], char* static_pid);
+int childProcess(char* program, char* argv[]);
 
 #endif // CHILD_HPP

@@ -5,8 +5,8 @@
 #include "const.hpp"
 
 struct package_header {
-    signed char type;
     unsigned int header_key;
+    unsigned char type;
     pid_t parent_pid;
     pid_t pid;
     int64_t time;

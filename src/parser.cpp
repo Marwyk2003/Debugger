@@ -4,17 +4,16 @@
 #include <string>
 #include <cstring>
 #include <iomanip>
+#include <string>
+#include <algorithm>
+#include <pwd.h>
 
 #include "const.hpp"
 #include "log_writer.hpp"
 #include "package_header.hpp"
-
-#include<iostream>
-#include <pwd.h>
+#include "parser.hpp"
 
 using namespace std;
-
-string get_file_name(string time, string line);
 
 void parse_buffer(map<string, ofstream>& streamMap, map<string, string>& dataMap, char* buf, bool isError, int end) {
     string pid, ppid, name, time;
@@ -33,10 +32,10 @@ void parse_buffer(map<string, ofstream>& streamMap, map<string, string>& dataMap
 
     if (head.type == 0) {
         if (streamMap.find(pid) == streamMap.end()) {
-
-            string file_name = get_file_name(time, line);
-
-            dataMap[pid] = file_name;
+            if (dataMap.find(pid) == dataMap.end()) {
+                dataMap[pid] = get_file_name(time, line);
+            }
+            string file_name = dataMap[pid];
 
             if (firstOccurence){
                 firstOccurence = false;
@@ -51,7 +50,8 @@ void parse_buffer(map<string, ofstream>& streamMap, map<string, string>& dataMap
         ofstream& s = streamMap[pid];
         writeLine(s, line, time, isError);
     } else {
-        writeLink(streamMap[ppid], time, pid, "link", dataMap[pid]);
+        string filename = head.type == 1 ? line : dataMap[pid]; 
+        writeLink(streamMap[ppid], time, pid, "link", filename);
     }
 }
 
@@ -69,7 +69,7 @@ string get_file_name(string time, string line){
     oss << put_time(localtime(&time_t), "%Y-%m-%d %H:%M:%S");
     string time_string = oss.str();
     
-    line.erase(remove(line.begin(), line.end(), '\n'));
+    erase(line, '\n');
 
     replace(line.begin(), line.end(), '.', '_');
     replace(line.begin(), line.end(), '/', '_');

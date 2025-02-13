@@ -42,7 +42,7 @@ static void process(int size, char* buf, int fd, pid_t pid) {
     write(fd, buf, size);
 }
 
-static void writeInfoToTmpFiles(pid_t pid, char* static_pid) {
+static void writeInfoToTmpFiles(pid_t pid) {
     int status = 0;
     pid_t childPid = waitpid(pid, &status, 0);
     auto now = chrono::system_clock::now(); // last entry
@@ -53,7 +53,8 @@ static void writeInfoToTmpFiles(pid_t pid, char* static_pid) {
        exitCode = WEXITSTATUS(status);
     }
 
-    pid_t codedPid = static_pid ? atoll(static_pid) : getpid();
+    pid_t codedPid = getpid();
+
     ofstream exitCodeStream(string(TMP_INFO_DIR_PATH) + "/exitcode_" + to_string(codedPid));
     exitCodeStream << exitCode;
     exitCodeStream.flush();
@@ -65,7 +66,7 @@ static void writeInfoToTmpFiles(pid_t pid, char* static_pid) {
     lastEntryStream.close();
 }
 
-int childProcess(char* program, char* argv[], char* static_pid) {
+int childProcess(char* program, char* argv[]) {
     // create pipe LISTENER <- PROGRAM
     int pipe_fd_out[2], pipe_fd_err[2];
     pipe(pipe_fd_out);
@@ -91,9 +92,8 @@ int childProcess(char* program, char* argv[], char* static_pid) {
     dup2(pipe_fd_out[0], FD_OUT);
     dup2(pipe_fd_err[0], FD_ERR);
 
-    pid_t pid = static_pid ? atoll(static_pid) : getpid();
-    listen_on_fds([pid](int size, char* buffer, int fd) {process(size, buffer, fd, pid);});
-    writeInfoToTmpFiles(fork_pid, static_pid);
+    listen_on_fds([](int size, char* buffer, int fd) {process(size, buffer, fd, getpid());});
+    writeInfoToTmpFiles(fork_pid);
 
     return 0;
 }

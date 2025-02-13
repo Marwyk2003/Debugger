@@ -71,11 +71,16 @@ static void fillLastEntryAndExit(map<string, ofstream>& pids, map<string, string
     }
 }
 
-int rootProcess() {
+int rootProcess(pid_t child_pid) {
     map<string, ofstream> streamMap;
     map<string, string> dataMap;
     streamMap.clear();
     dataMap.clear();
+
+    char* static_filename = getenv(ENV_STATIC_FILENAME);
+    if (static_filename) {
+        dataMap[to_string(child_pid)] = static_filename;
+    }
 
     auto proc = [&streamMap, &dataMap](int size, char* buf, int fd) {
         if (size == sizeof(package_header)) return; // empty log early return;
@@ -141,7 +146,7 @@ int main(int, char* argv[]) {
             dup2(pipe_fd_out[0], FD_OUT);
             dup2(pipe_fd_err[0], FD_ERR);
 
-            int exit_code = rootProcess();
+            int exit_code = rootProcess(pid);
             unsetenv(ENV_DEBUG);
             return exit_code;
         } else {
@@ -153,7 +158,6 @@ int main(int, char* argv[]) {
         }
     }
 
-    char* static_pid = getenv(ENV_STATIC_PID);
-    int exit_code = childProcess(argv[1], argv + 1, static_pid);
+    int exit_code = childProcess(argv[1], argv + 1);
     return exit_code;
 }
