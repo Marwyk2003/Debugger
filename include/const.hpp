@@ -1,5 +1,5 @@
 #define ENV_DEBUG "DEBUG"
-#define ENV_PATH "LOGS_PATH"
+#define ENV_PATH "DEFAULT_PATH"
 #define ENV_CALLHANDLER "CALLHANDLER"
 #define ENV_STATIC_FILENAME "DEBUG_STATIC_FILENAME"
 
@@ -10,3 +10,4 @@
 #define END_OUT "E_OUT"
 #define HEADER_CONST 4278057967
 #define TMP_INFO_DIR_PATH "/tmp/debugger"
+#define DEBUGGER "debugger"

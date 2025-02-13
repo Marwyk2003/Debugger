@@ -68,7 +68,7 @@ void writeLink(ofstream& result, string timeStr, string pid, string name, string
     auto time_point = chrono::system_clock::time_point(duration);
     time_t time = chrono::system_clock::to_time_t(time_point);
 
-    string debugger_path = getDebuggerPath();
+    string debugger_path = getOutputPath();
 
     result << "<tr><td class=\"entry-time\">";
     result << put_time(localtime(&time), "%Y-%m-%d %H:%M:%S");
@@ -86,7 +86,7 @@ void registerLink(string timeStr, string pid, string name, string file_name) {
     struct passwd *pw = getpwuid(getuid());
     char* user_name = pw->pw_name;
 
-    string debugger_path = getDebuggerPath();
+    string debugger_path = getOutputPath();
 
     ofstream res(debugger_path + "/" + hostname + "/" + user_name  + "/index.html", std::ios::app);
     res << "<tr><td class=\"entry-time\">";

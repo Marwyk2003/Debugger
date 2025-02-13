@@ -43,7 +43,7 @@ void parse_buffer(map<string, ofstream>& streamMap, map<string, string>& dataMap
                 registerLink(time, pid, line, file_name);
             }
 
-            string debugger_path = getDebuggerPath();
+            string debugger_path = getOutputPath();
 
             string path = debugger_path + "/all_logs" + file_name;
             streamMap[pid].open(path, ios::out | ios::trunc);

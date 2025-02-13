@@ -30,14 +30,14 @@ static void fillLastEntryAndExit(map<string, ofstream>& pids, map<string, string
     for (auto& [k, _] : pids) {
         if (k == "0") continue;
 
-        string debugger_path = getDebuggerPath();
+        string debugger_path = getOutputPath();
         ifstream html(debugger_path + "/all_logs" + dataMap[k]);
         if (!html) continue;
         stringstream buff;
         buff << html.rdbuf();
         html.close();
         string content = buff.str();
-        
+
         buff = stringstream();
         ifstream lastEntry(string(TMP_INFO_DIR_PATH) + "/lastentry_" + k);
         buff << lastEntry.rdbuf();
@@ -54,7 +54,7 @@ static void fillLastEntryAndExit(map<string, ofstream>& pids, map<string, string
             size_t pos = 0;
             string exitSpanOld = R"(<span class="info-title exitno">exit ?</span>)";
             string exitSpanNew = (exitCodeValue == "0") ? R"(<span class="info-title exitok">exit 0</span>)"
-                                                        : R"(<span class="info-title exiterr">exit )" + exitCodeValue + R"(</span>)";
+                : R"(<span class="info-title exiterr">exit )" + exitCodeValue + R"(</span>)";
             pos = content.find(exitSpanOld, pos);
             content.replace(pos, exitSpanOld.length(), exitSpanNew);
         }
@@ -89,7 +89,7 @@ int rootProcess(pid_t child_pid) {
         if (fd == STDERR_FILENO) write(fd, RED, 6);
         write(fd, buf + sizeof(package_header), size - sizeof(package_header));
         if (fd == STDERR_FILENO) write(fd, RESET, 5);
-    };
+        };
 
     listen_on_fds(proc);
 
@@ -109,21 +109,14 @@ int main(int argc, char* argv[]) {
     char* debug_var = getenv(ENV_DEBUG);
 
     if (!debug_var) {
-        char path[PATH_MAX];
-        int count = readlink("/proc/self/exe", path, PATH_MAX);
-        if (count > 0) {
-            path[count] = 0;
-            setenv(ENV_DEBUG, path, 1);
-            string callhandler_var = string(path) + " --callhandler";
-            setenv(ENV_CALLHANDLER, callhandler_var.c_str(), 1);
-        } else {
-            setenv(ENV_DEBUG, argv[0], 1);
-            string callhandler_var = string(argv[0]) + " --callhandler";
-            setenv(ENV_CALLHANDLER, callhandler_var.c_str(), 1);
-        }
+
+        setenv(ENV_DEBUG, DEBUGGER, 1);
+        string callhandler_var = string(argv[0]) + " --callhandler";
+        setenv(ENV_CALLHANDLER, callhandler_var.c_str(), 1);
+
 
         mode_t old_mask = umask(0); // just in case
-        string debugger_path = getDebuggerPath();
+        string debugger_path = getOutputPath();
         mkdir(debugger_path.c_str(), 0777); // TODO think about permissions, maybe too loose
         mkdir((debugger_path + "/all_logs").c_str(), 0777);
         char info_dir[] = TMP_INFO_DIR_PATH;

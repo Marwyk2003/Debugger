@@ -11,47 +11,47 @@
 #include "const.hpp"
 #include <pwd.h>
 
-std::string getDebuggerPath(){
-    char* path = getenv(ENV_PATH);
-    if (!path){
-        struct passwd *pw = getpwuid(getuid());
-        char* dir = pw->pw_dir;
-        return std::string(dir) + "/debugger_logs";
-    }
-    return std::string(path) + "/debugger_logs";
+std::string getOutputPath() {
+  char* path = getenv(ENV_PATH);
+  if (!path) {
+    struct passwd* pw = getpwuid(getuid());
+    char* dir = pw->pw_dir;
+    return std::string(dir) + "/debugger_logs";
+  }
+  return std::string(path) + "/debugger_logs";
 }
 
 void generateIndexHtml(std::string path, std::string styles_path, std::string message);
 void addLink(std::string index_path, std::string self_path, std::string name);
 
 void deleteContentOfDir(const std::string& path) {
-    DIR* dir = opendir(path.c_str());
+  DIR* dir = opendir(path.c_str());
 
-    struct dirent* entry;
-    struct stat fileStat;
+  struct dirent* entry;
+  struct stat fileStat;
 
-    while ((entry = readdir(dir)) != nullptr) {
-        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
-            continue;
-        }
-
-        std::string fullPath = path + "/" + entry->d_name;
-
-        if (stat(fullPath.c_str(), &fileStat) == 0) {
-            if (S_ISDIR(fileStat.st_mode)) {
-                deleteContentOfDir(fullPath);
-                rmdir(fullPath.c_str());
-            } else {
-                remove(fullPath.c_str());
-            }
-        }
+  while ((entry = readdir(dir)) != nullptr) {
+    if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+      continue;
     }
-    closedir(dir);
+
+    std::string fullPath = path + "/" + entry->d_name;
+
+    if (stat(fullPath.c_str(), &fileStat) == 0) {
+      if (S_ISDIR(fileStat.st_mode)) {
+        deleteContentOfDir(fullPath);
+        rmdir(fullPath.c_str());
+      } else {
+        remove(fullPath.c_str());
+      }
+    }
+  }
+  closedir(dir);
 }
 
 void createStyles(const std::string& path) {
-    std::ofstream styles(path + "/all_logs/styles.css");
-    styles << R"(body {
+  std::ofstream styles(path + "/all_logs/styles.css");
+  styles << R"(body {
   background-color: #272822;
   margin: 0;
   padding: 0
@@ -223,46 +223,46 @@ span.entry-exit {
 	font-style: italic;
 	padding-right: 0px;
 })";
-    
-    styles.close();
+
+  styles.close();
 }
 
 
 void createIndex(const std::string& path) {
-    std::ifstream servers_file_check(path + "/index.html");    
-    if (servers_file_check.good()) return;
+  std::ifstream servers_file_check(path + "/index.html");
+  if (servers_file_check.good()) return;
 
-    generateIndexHtml(path, "all_logs/styles.css", "list of servers");
+  generateIndexHtml(path, "all_logs/styles.css", "list of servers");
 
-    char hostname[256];
-    gethostname(hostname, sizeof(hostname));
-    std::string server_path = path + "/" + hostname;
-    mkdir(server_path.c_str(), 0777);
+  char hostname[256];
+  gethostname(hostname, sizeof(hostname));
+  std::string server_path = path + "/" + hostname;
+  mkdir(server_path.c_str(), 0777);
 
-    std::ifstream users_file_check(server_path + "/index.html");
-    if (users_file_check.good()) return;
+  std::ifstream users_file_check(server_path + "/index.html");
+  if (users_file_check.good()) return;
 
-    generateIndexHtml(server_path, "../all_logs/styles.css", "list of users");
+  generateIndexHtml(server_path, "../all_logs/styles.css", "list of users");
 
-    addLink(path, server_path, hostname);
+  addLink(path, server_path, hostname);
 
-    struct passwd *pw = getpwuid(getuid());
-    char* user_name = pw->pw_name;
-    std::string user_path = server_path + "/" + std::string(user_name);
+  struct passwd* pw = getpwuid(getuid());
+  char* user_name = pw->pw_name;
+  std::string user_path = server_path + "/" + std::string(user_name);
 
-    mkdir(user_path.c_str(), 0777);
+  mkdir(user_path.c_str(), 0777);
 
-    std::ifstream file_check(user_path + "/index.html");
-    if (file_check.good()) return;
+  std::ifstream file_check(user_path + "/index.html");
+  if (file_check.good()) return;
 
-    generateIndexHtml(user_path, "../../all_logs/styles.css", "list of debugged progras");
-    addLink(server_path, user_path, user_name);
+  generateIndexHtml(user_path, "../../all_logs/styles.css", "list of debugged progras");
+  addLink(server_path, user_path, user_name);
 }
 
 
-void generateIndexHtml(std::string path, std::string styles_path, std::string message){
-    std::ofstream index(path + "/index.html");
-    index << R"(<!DOCTYPE html>
+void generateIndexHtml(std::string path, std::string styles_path, std::string message) {
+  std::ofstream index(path + "/index.html");
+  index << R"(<!DOCTYPE html>
 <html lang="pl-PL">
 <head>
 <meta charset="UTF-8" />
@@ -281,12 +281,12 @@ void generateIndexHtml(std::string path, std::string styles_path, std::string me
 <table>
 <tboby>)";
 
-    index.close();
+  index.close();
 }
 
-void addLink(std::string index_path, std::string self_path, std::string name){
-    std::ofstream res(index_path + "/index.html", std::ios::app);
-    res << "<td class=\"entry-log entry-link\"><a href=" << self_path + "/index.html" << ">" << name << " </a></td></tr>\n";
-    res.flush();
-    res.close();
+void addLink(std::string index_path, std::string self_path, std::string name) {
+  std::ofstream res(index_path + "/index.html", std::ios::app);
+  res << "<td class=\"entry-log entry-link\"><a href=" << self_path + "/index.html" << ">" << name << " </a></td></tr>\n";
+  res.flush();
+  res.close();
 }
