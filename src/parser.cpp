@@ -11,6 +11,7 @@
 #include "const.hpp"
 #include "log_writer.hpp"
 #include "package_header.hpp"
+#include "utilz.hpp"
 #include "parser.hpp"
 
 using namespace std;
@@ -37,12 +38,14 @@ void parse_buffer(map<string, ofstream>& streamMap, map<string, string>& dataMap
             }
             string file_name = dataMap[pid];
 
-            if (firstOccurence){
+            if (firstOccurence) {
                 firstOccurence = false;
                 registerLink(time, pid, line, file_name);
             }
-            
-            string path = string(DEFAULT_PATH) + file_name;
+
+            string debugger_path = getOutputPath();
+
+            string path = debugger_path + "/all_logs" + file_name;
             streamMap[pid].open(path, ios::out | ios::trunc);
             writeHeader(streamMap[pid], line);
             writeLink(streamMap[ppid], time, pid, line, file_name);
@@ -50,14 +53,14 @@ void parse_buffer(map<string, ofstream>& streamMap, map<string, string>& dataMap
         ofstream& s = streamMap[pid];
         writeLine(s, line, time, isError);
     } else {
-        string filename = head.type == 1 ? line : dataMap[pid]; 
+        string filename = head.type == 1 ? line : dataMap[pid];
         writeLink(streamMap[ppid], time, pid, "link", filename);
     }
 }
 
 
-string get_file_name(string time, string line){
-    struct passwd *pw = getpwuid(getuid());
+string get_file_name(string time, string line) {
+    struct passwd* pw = getpwuid(getuid());
     char* dir = pw->pw_dir;
     char* user_name = pw->pw_name;
 
@@ -68,16 +71,18 @@ string get_file_name(string time, string line){
     ostringstream oss;
     oss << put_time(localtime(&time_t), "%Y-%m-%d %H:%M:%S");
     string time_string = oss.str();
-    
+
     erase(line, '\n');
 
     replace(line.begin(), line.end(), '.', '_');
     replace(line.begin(), line.end(), '/', '_');
 
+
     char hostname[256];
     gethostname(hostname, sizeof(hostname));
-    string file_name = "/" + time_string + "_" + string(user_name) + "@" + hostname + "_" + line + ".html";
+    string file_name = "/" + time_string + "_" + string(user_name) + "_" + hostname + "_" + line + ".html";
     replace(file_name.begin(), file_name.end(), ' ', '_');
+    replace(file_name.begin(), file_name.end(), ':', '-');
 
     return file_name;
 }
