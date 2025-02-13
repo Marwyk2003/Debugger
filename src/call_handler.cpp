@@ -4,6 +4,7 @@
 #include <chrono>
 
 #include "package_header.hpp"
+#include "parser.hpp"
 
 using namespace std;
 using namespace chrono;
@@ -15,7 +16,9 @@ void callhandlerProcess(char* program, char* argv[]) {
     auto currentTime = duration_cast<milliseconds>(now.time_since_epoch()).count();
 
     unsetenv(ENV_DEBUG);
-    setenv(ENV_STATIC_PID, std::to_string(pid).c_str(), 1);
+
+    string filename = get_file_name(to_string(currentTime), "nohup");
+    setenv(ENV_STATIC_FILENAME, filename.c_str(), 1);
 
     package_header head;
     head.type = 1;
@@ -25,6 +28,7 @@ void callhandlerProcess(char* program, char* argv[]) {
     head.time = currentTime;
 
     write(STDOUT_FILENO, &head, sizeof(package_header));
+    write(STDOUT_FILENO, filename.c_str(), filename.size());
     write(STDOUT_FILENO, "\n", 1);
 
     execvp(program, argv);
