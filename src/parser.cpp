@@ -34,7 +34,7 @@ void parse_buffer(map<string, ofstream>& streamMap, map<string, string>& dataMap
     if (head.type == 0) {
         if (streamMap.find(pid) == streamMap.end()) {
             if (dataMap.find(pid) == dataMap.end()) {
-                dataMap[pid] = get_file_name(time, line);
+                dataMap[pid] = get_file_name(time, line, pid);
             }
             string file_name = dataMap[pid];
 
@@ -59,7 +59,7 @@ void parse_buffer(map<string, ofstream>& streamMap, map<string, string>& dataMap
 }
 
 
-string get_file_name(string time, string line) {
+string get_file_name(string time, string line, string pid) {
     struct passwd* pw = getpwuid(getuid());
     char* dir = pw->pw_dir;
     char* user_name = pw->pw_name;
@@ -80,7 +80,7 @@ string get_file_name(string time, string line) {
 
     char hostname[256];
     gethostname(hostname, sizeof(hostname));
-    string file_name = "/" + time_string + "_" + string(user_name) + "_" + hostname + "_" + line;
+    string file_name = "/" + time_string + "_" + string(user_name) + "_" + hostname + "_" + line + "_" + pid;
     replace(file_name.begin(), file_name.end(), ' ', '_');
     replace(file_name.begin(), file_name.end(), ':', '-');
 
