@@ -47,13 +47,13 @@ void parse_buffer(map<string, ofstream>& streamMap, map<string, string>& dataMap
 
             string path = debugger_path + "/all_logs" + file_name;
             streamMap[pid].open(path, ios::out | ios::trunc);
-            writeHeader(streamMap[pid], line);
+            writeHeader(streamMap[pid], line, pid);
             writeLink(streamMap[ppid], time, pid, line, file_name);
         }
         ofstream& s = streamMap[pid];
         writeLine(s, line, time, isError);
     } else {
-        string filename = head.type == 1 ? line : dataMap[pid];
+        string filename = head.type == 1 ? line : (dataMap[pid]);
         writeLink(streamMap[ppid], time, pid, "link", filename);
     }
 }
@@ -80,7 +80,7 @@ string get_file_name(string time, string line) {
 
     char hostname[256];
     gethostname(hostname, sizeof(hostname));
-    string file_name = "/" + time_string + "_" + string(user_name) + "_" + hostname + "_" + line + ".html";
+    string file_name = "/" + time_string + "_" + string(user_name) + "_" + hostname + "_" + line;
     replace(file_name.begin(), file_name.end(), ' ', '_');
     replace(file_name.begin(), file_name.end(), ':', '-');
 
