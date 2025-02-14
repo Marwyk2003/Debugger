@@ -35,7 +35,7 @@ void writeHeader(ofstream& result, string program_name, string pid) {
 <span class="info-title">last entry:</span> <span class="info-value" id="last_entry"></span>
 </div>
 <div class="info">
-<span class="info-title exitno">exit <span id="exit_code"></span textContent="?"></span>
+<span class="info-title"><span class="exitno" id="exit_code_wrapper">exit <span id="exit_code"></span textContent="?"></span></span>
 </div>
 <script src="./)" << pid << R"(.js"></script>
 <div class="line"></div>
@@ -108,4 +108,7 @@ void createJsFile(pid_t pid, int exit_code) {
     js_file.open(path, ios::out | ios::trunc);
     js_file << R"(document.getElementById("exit_code").textContent=")" << exit_code << R"(";)"
             << R"(document.getElementById("last_entry").textContent=")" << put_time(localtime(&time), "%Y-%m-%d %H:%M:%S") << R"(";)";
+            
+    if (exit_code) js_file << R"(document.getElementById("exit_code_wrapper").className="exiterr")";
+    else js_file << R"(document.getElementById("exit_code_wrapper").className="exitok")";
 }
