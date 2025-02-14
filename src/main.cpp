@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
     if (!debug_var) {
 
         setenv(ENV_DEBUG, DEBUGGER, 1);
-        string callhandler_var = string(argv[0]) + " --callhandler";
+        string callhandler_var = string(DEBUGGER) + " --callhandler";
         setenv(ENV_CALLHANDLER, callhandler_var.c_str(), 1);
 
 
