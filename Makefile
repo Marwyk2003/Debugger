@@ -6,7 +6,7 @@ SRC_DIR  := src
 OBJ_DIR  := obj
 BIN_DIR  := bin
 INC_DIR  := include
-LIB_PATH := ~/bin
+LIB_PATH := /usr/bin
 BIN_NAME := debugger
 
 TARGET := $(BIN_DIR)/$(BIN_NAME)

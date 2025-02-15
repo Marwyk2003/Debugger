@@ -8,9 +8,9 @@ Debugger creates a structured tree of HTML files for easier log analysis of larg
 git clone
 cd Debugger
 make
-make install
+sudo make install
 ```
->Note #1: `make install` puts `debugger` binary in `~/bin` directory and assumes you have `~/bin` in your `$PATH` variable.
+>Note #1: `make install` tries to put `debugger` binary in `/usr/bin` directory.
 
 >Note #2: You can skip `make install`. To make `debugger` work properly and be accessible from anywhere, add its location to your `$PATH` variable.
 
