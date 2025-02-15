@@ -1,6 +1,7 @@
-#include<iomanip>
+#include <iomanip>
 #include <pwd.h>
 #include <unistd.h>
+#include <fstream>
 
 #include "const.hpp"
 #include "utilz.hpp"
@@ -8,35 +9,35 @@
 
 using namespace std;
 
-void writeHeader(ofstream& result, string program_name) {
+void writeHeader(ofstream& result, string program_name, string pid) {
     auto now = chrono::system_clock::now();
     auto time = chrono::system_clock::to_time_t(now);
-    result << R"(<!DOCTYPE html>
+    result << R"(
+<!DOCTYPE html>
 <html lang="pl-PL">
 <head>
 <meta charset="UTF-8" />
 <link rel="stylesheet" href="styles.css" />
-<title>)";
-    result << program_name << "\n";
-    result << R"(</title>
+<title>)" << program_name << "\n"<< R"(
+</title>
 </head>
 <body>
 <div class="head">
 <div class="info">
-<span class="info-title">command:</span> <span class="info-value info-value-path">)" +
-program_name + R"(</span>
+<span class="info-title">command:</span>
+<span class="info-value info-value-path">)" << program_name << R"(</span>
 </div>
 <div class="info">
-<span class="info-title">start time:</span> <span class="info-value">)";
-    result << put_time(localtime(&time), "%Y-%m-%d %H:%M:%S");
-    result << R"(</span>
+<span class="info-title">start time:</span>
+<span class="info-value">)" << put_time(localtime(&time), "%Y-%m-%d %H:%M:%S") << R"(</span>
 </div>
 <div class="info">
-<span class="info-title">last entry:</span> <span class="info-value"></span>
+<span class="info-title">last entry:</span> <span class="info-value" id="last_entry"></span>
 </div>
 <div class="info">
-<span class="info-title exitno">exit ?</span>
+<span class="info-title"><span class="exitno" id="exit_code_wrapper">exit <span id="exit_code"></span textContent="?"></span></span>
 </div>
+<script src="./)" << pid << R"(.js"></script>
 <div class="line"></div>
 <div class="entries">
 <table>
@@ -94,4 +95,20 @@ void registerLink(string timeStr, string pid, string name, string file_name) {
     res << "</td><td>&nbsp;</td><td class=\"entry-log entry-link\"><a href=" << debugger_path + "/all_logs" + file_name << ">" << name << " </a></td></tr>\n";
     res.flush();
     res.close();
+}
+
+void createJsFile(pid_t pid, int exit_code) {
+    string debugger_path = getOutputPath();
+    string path = debugger_path + "/all_logs/" + to_string(pid) + ".js";
+
+    auto now = chrono::system_clock::now(); // last entry
+    auto time = chrono::system_clock::to_time_t(now);
+
+    fstream js_file;
+    js_file.open(path, ios::out | ios::trunc);
+    js_file << R"(document.getElementById("exit_code").textContent=")" << exit_code << R"(";)"
+            << R"(document.getElementById("last_entry").textContent=")" << put_time(localtime(&time), "%Y-%m-%d %H:%M:%S") << R"(";)";
+            
+    if (exit_code) js_file << R"(document.getElementById("exit_code_wrapper").className="exiterr")";
+    else js_file << R"(document.getElementById("exit_code_wrapper").className="exitok")";
 }
