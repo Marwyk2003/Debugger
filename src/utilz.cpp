@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2025 M. Wykpis, A. Szwaja, P. Kubicki, S. Szulc, K. Socha
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ */
+
 #include <cstdio>
 #include <cstring>
 #include <dirent.h>
@@ -255,7 +263,7 @@ void createIndex(const std::string& path) {
   std::ifstream file_check(user_path + "/index.html");
   if (file_check.good()) return;
 
-  generateIndexHtml(user_path, "../../all_logs/styles.css", "list of debugged progras");
+  generateIndexHtml(user_path, "../../all_logs/styles.css", "list of debugged programs");
   addLink(server_path, user_path, user_name);
 }
 
