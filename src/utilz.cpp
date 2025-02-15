@@ -255,7 +255,7 @@ void createIndex(const std::string& path) {
   std::ifstream file_check(user_path + "/index.html");
   if (file_check.good()) return;
 
-  generateIndexHtml(user_path, "../../all_logs/styles.css", "list of debugged progras");
+  generateIndexHtml(user_path, "../../all_logs/styles.css", "list of debugged programs");
   addLink(server_path, user_path, user_name);
 }
 
