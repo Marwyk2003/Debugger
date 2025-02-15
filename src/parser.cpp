@@ -49,6 +49,7 @@ void parse_buffer(map<string, ofstream>& streamMap, map<string, string>& dataMap
             streamMap[pid].open(path, ios::out | ios::trunc);
             writeHeader(streamMap[pid], line, pid);
             writeLink(streamMap[ppid], time, pid, line, file_name);
+            return;
         }
         ofstream& s = streamMap[pid];
         writeLine(s, line, time, isError);
