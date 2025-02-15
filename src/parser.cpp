@@ -61,7 +61,6 @@ void parse_buffer(map<string, ofstream>& streamMap, map<string, string>& dataMap
 
 string get_file_name(string time, string line, string pid) {
     struct passwd* pw = getpwuid(getuid());
-    char* dir = pw->pw_dir;
     char* user_name = pw->pw_name;
 
     long long milliseconds = stoll(time);
@@ -80,7 +79,7 @@ string get_file_name(string time, string line, string pid) {
 
     char hostname[256];
     gethostname(hostname, sizeof(hostname));
-    string file_name = "/" + time_string + "_" + string(user_name) + "_" + hostname + "_" + line + "_" + pid;
+    string file_name = "/" + time_string + "_" + string(user_name) + "_" + hostname + "_" + line + "_" + pid + ".html";
     replace(file_name.begin(), file_name.end(), ' ', '_');
     replace(file_name.begin(), file_name.end(), ':', '-');
 
