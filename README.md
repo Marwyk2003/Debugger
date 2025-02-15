@@ -14,7 +14,12 @@ sudo make install
 
 >Note #2: You can skip `make install`. To make `debugger` work properly and be accessible from anywhere, add its location to your `$PATH` variable.
 
-### Install via Package manager (TODO)
+### Install via Package manager
+
+Currently our package is only available on AUR.
+```
+yay -S debugger
+```
 
 ## Usage
 
