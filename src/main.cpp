@@ -33,53 +33,6 @@
 
 using namespace std;
 
-static void fillLastEntryAndExit(map<string, ofstream>& pids, map<string, string>& dataMap) {
-    // TODO: make js script to handle it
-    for (auto& [k, _] : pids) {
-        if (k == "0") continue;
-
-        string debugger_path = getOutputPath();
-        ifstream html(debugger_path + "/all_logs" + dataMap[k]);
-        if (!html) continue;
-        stringstream buff;
-        buff << html.rdbuf();
-        html.close();
-        string content = buff.str();
-
-        buff = stringstream();
-        ifstream lastEntry(string(TMP_INFO_DIR_PATH) + "/lastentry_" + k);
-        buff << lastEntry.rdbuf();
-        lastEntry.close();
-        string lastEntryValue = buff.str();
-
-        buff = stringstream();
-        ifstream exitCode(string(TMP_INFO_DIR_PATH) + "/exitcode_" + k);
-        buff << exitCode.rdbuf();
-        exitCode.close();
-        string exitCodeValue = buff.str();
-
-        if (exitCodeValue != "-1") {
-            size_t pos = 0;
-            string exitSpanOld = R"(<span class="info-title exitno">exit ?</span>)";
-            string exitSpanNew = (exitCodeValue == "0") ? R"(<span class="info-title exitok">exit 0</span>)"
-                : R"(<span class="info-title exiterr">exit )" + exitCodeValue + R"(</span>)";
-            pos = content.find(exitSpanOld, pos);
-            content.replace(pos, exitSpanOld.length(), exitSpanNew);
-        }
-
-        size_t pos = 0;
-        string lastEntryOld = R"(<span class="info-title">last entry:</span> <span class="info-value"></span>)";
-        string lastEntryNew = R"(<span class="info-title">last entry:</span><span class="info-value"> )" + lastEntryValue + R"(</span>)";
-        pos = content.find(lastEntryOld, pos);
-        content.replace(pos, lastEntryOld.length(), lastEntryNew);
-
-        ofstream res(debugger_path + "/all_logs" + dataMap[k]);
-        res << content;
-        res.flush();
-        res.close();
-    }
-}
-
 int rootProcess(pid_t child_pid) {
     map<string, ofstream> streamMap;
     map<string, string> dataMap;
@@ -105,7 +58,6 @@ int rootProcess(pid_t child_pid) {
         v.close();
     }
 
-    fillLastEntryAndExit(streamMap, dataMap);
     return 0;
 }
 
@@ -119,7 +71,7 @@ int main(int argc, char* argv[]) {
     if (!debug_var) {
 
         setenv(ENV_DEBUG, DEBUGGER, 1);
-        string callhandler_var = string(argv[0]) + " --callhandler";
+        string callhandler_var = string(DEBUGGER) + " --callhandler";
         setenv(ENV_CALLHANDLER, callhandler_var.c_str(), 1);
 
 

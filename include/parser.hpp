@@ -20,6 +20,6 @@ using namespace std;
 
 void parse_buffer(map<string, ofstream>& pidMap, map<string, string>& dataMap, char* buf, bool isError, int end);
 
-string get_file_name(string time, string line);
+string get_file_name(string time, string line, string pid);
 
 #endif // PARSER_HPP

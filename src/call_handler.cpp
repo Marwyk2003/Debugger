@@ -25,7 +25,7 @@ void callhandlerProcess(char* program, char* argv[]) {
 
     unsetenv(ENV_DEBUG);
 
-    string filename = get_file_name(to_string(currentTime), "nohup");
+    string filename = get_file_name(to_string(currentTime), "nohup", to_string(pid));
     setenv(ENV_STATIC_FILENAME, filename.c_str(), 1);
 
     package_header head;

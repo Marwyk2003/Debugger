@@ -14,14 +14,17 @@
 #include <string>
 #include <sstream>
 
+using namespace std;
 
-void writeHeader(std::ofstream& file_strem, std::string program_name);
+void writeHeader(ofstream& file_strem, string program_name, string filename);
 
-void writeLine(std::ofstream& file_stream, std::string line, std::string time_str, bool is_error);
+void writeLine(ofstream& file_stream, string line, string time_str, bool is_error);
 
-void writeLink(std::ofstream& result, std::string time_str, std::string pid, std::string name, std::string file_name);
+void writeLink(ofstream& result, string time_str, string pid, string name, string file_name);
 
-void registerLink(std::string time_str, std::string pid, std::string name, std::string file_name);
+void registerLink(string time_str, string pid, string name, string file_name);
+
+void createJsFile(pid_t pid, int exit_code);
 
 
 #endif // LOG_WRITER_HPP

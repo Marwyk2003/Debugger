@@ -21,6 +21,7 @@
 #include "const.hpp"
 #include "child.hpp"
 #include "fds_listner.hpp"
+#include "log_writer.hpp"
 #include "package_header.hpp"
 
 using namespace std;
@@ -50,28 +51,16 @@ static void process(int size, char* buf, int fd, pid_t pid) {
     write(fd, buf, size);
 }
 
-static void writeInfoToTmpFiles(pid_t pid) {
+static void writeInfoToTmpFiles(pid_t pid, pid_t child_pid) {
     int status = 0;
-    pid_t childPid = waitpid(pid, &status, 0);
-    auto now = chrono::system_clock::now(); // last entry
-    auto time = chrono::system_clock::to_time_t(now);
+    pid_t wpid = waitpid(child_pid, &status, 0);
     
     int exitCode = -1;
-    if (childPid > 0 && WIFEXITED(status)) {
+    if (wpid > 0 && WIFEXITED(status)) {
        exitCode = WEXITSTATUS(status);
     }
 
-    pid_t codedPid = getpid();
-
-    ofstream exitCodeStream(string(TMP_INFO_DIR_PATH) + "/exitcode_" + to_string(codedPid));
-    exitCodeStream << exitCode;
-    exitCodeStream.flush();
-    exitCodeStream.close();
-
-    ofstream lastEntryStream(string(TMP_INFO_DIR_PATH) + "/lastentry_" + to_string(codedPid));
-    lastEntryStream << put_time(localtime(&time), "%Y-%m-%d %H:%M:%S");
-    lastEntryStream.flush();
-    lastEntryStream.close();
+    createJsFile(pid, exitCode);
 }
 
 int childProcess(char* program, char* argv[]) {
@@ -100,8 +89,9 @@ int childProcess(char* program, char* argv[]) {
     dup2(pipe_fd_out[0], FD_OUT);
     dup2(pipe_fd_err[0], FD_ERR);
 
-    listen_on_fds([](int size, char* buffer, int fd) {process(size, buffer, fd, getpid());});
-    writeInfoToTmpFiles(fork_pid);
+    pid_t pid = getpid();
+    listen_on_fds([pid](int size, char* buffer, int fd) {process(size, buffer, fd, pid);});
+    writeInfoToTmpFiles(pid, fork_pid);
 
     return 0;
 }
