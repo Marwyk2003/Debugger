@@ -18,7 +18,7 @@ sudo make install
 
 Currently our package is only available on AUR.
 ```
-yay -S debugger
+yay -S bash-debugger
 ```
 
 ## Usage
