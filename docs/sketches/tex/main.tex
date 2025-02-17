@@ -1,0 +1,44 @@
+\documentclass[a4paper]{article}
+\usepackage{graphicx}
+\usepackage{pdflscape}
+\usepackage{afterpage}
+\usepackage[margin=1cm]{geometry}
+
+\pagestyle{empty}
+
+\newcommand{\FullPageSketch}[2]{
+    \afterpage{
+    \begin{landscape}
+    \begin{figure}[p]
+    \centering    
+    \includegraphics[width=1.3\paperwidth]{#1}
+    \end{figure}
+    \end{landscape}
+    }
+}
+
+\begin{document}
+
+% Title page
+\begin{landscape}
+\begin{titlepage}
+    \centering
+    \vspace*{\fill}
+    {\Huge Bash-Debugger sketched documentation \par}
+    \vspace{1cm}
+    {\Large cieplypolar \par}
+    \vspace{2cm}
+    {\large Note: Sketches have not been updated continuously, keep that in mind ;) \par}
+    \vspace*{\fill}
+\end{titlepage}
+\end{landscape}
+
+\newpage
+
+\FullPageSketch{sketch1.png}{270}
+\FullPageSketch{sketch2.png}{270}
+\FullPageSketch{sketch3.png}{270}
+\FullPageSketch{sketch4.png}{270}
+\FullPageSketch{sketch5.png}{270}
+
+\end{document}
